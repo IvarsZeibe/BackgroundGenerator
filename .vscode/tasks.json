@@ -1,0 +1,36 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+    {
+        "label": "Build frontend",
+        "type": "shell",
+        "command": "npx vite build",
+        "group": "build",
+        "options": {
+            "cwd": "${workspaceFolder}/client"
+        },
+        "presentation": {
+            "reveal": "silent",
+            "group": "build"
+        }
+    },
+    {
+        "label": "Build backend",
+        "type": "shell",
+        "command": "cargo build",
+        "group": "build",
+        "options": {
+            "cwd": "${workspaceFolder}/server"
+        },
+        "presentation": {
+            "reveal": "silent",
+            "group": "build"
+        },
+    },
+    {
+        "label": "Build",
+        "problemMatcher": [],
+        "dependsOn": ["Build frontend", "Build backend"],
+    },
+    ]
+  }
