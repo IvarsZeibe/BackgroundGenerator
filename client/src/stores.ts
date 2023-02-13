@@ -5,14 +5,9 @@ type UserData = { id: number, email: string, isAdmin: boolean };
 export class User {
     #role: "Loading" | "Guest" | "Authorised";
     #data: {id: number, email: string, isAdmin: boolean} | null;
-    constructor(arg: "Loading" | "Guest" | UserData) {
-        if (typeof arg == "string") {
-            this.#role = arg;
-            this.#data = null;
-        } else {
-            this.#role = "Authorised";
-            this.#data = arg;
-        }
+    constructor() {
+        this.#role = "Loading";
+        this.#data = null;
     }
     isLoading() {
         return this.#role == "Loading";
@@ -29,5 +24,17 @@ export class User {
         }
         return this.#data as UserData;
     }
+    setToLoading() {
+        this.#role = "Loading";
+        this.#data = null;
+    };
+    setToGuest() {
+        this.#role = "Guest";
+        this.#data = null;
+    };
+    setToAuthorised(id: number, email: string, isAdmin: boolean) {
+        this.#role = "Authorised";
+        this.#data = { id, email, isAdmin };
+    };
 }
-export const user: Writable<User> = writable(new User("Loading"));
+export const user: Writable<User> = writable(new User());

@@ -4,26 +4,40 @@ class BackendService {
     async test() {
         return fetch("http://localhost:8000");
     }
-    async login(email: string, password: string) {
+    async login(email: string, password: string): Promise<{ isOk: boolean, message: string }> {
         let body: string = JSON.stringify({email: email, password: password});
-        return await fetch("http://localhost:8000/api/login", {
+        return fetch("http://localhost:8000/api/login", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
             },
             body: body
+        }).then(async res => {
+            if (res.ok) {
+                this.setProfile();
+                return { isOk: true, message: "" };
+            } else {
+                return { isOk: false, message: await res.text() };
+            }
         });
+        
     }
     
-    async register(email: string, password: string) {
+    async register(email: string, password: string): Promise<{ isOk: boolean, message: string }> {
         let body: string = JSON.stringify({email: email, password: password});
-        console.log(body);
         return fetch("http://localhost:8000/api/register", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
             },
             body: body
+        }).then(async res => {
+            if (res.ok) {
+                this.setProfile();
+                return { isOk: true, message: "" };
+            } else {
+                return { isOk: false, message: await res.text() };
+            }
         });
     }
 
@@ -32,7 +46,10 @@ class BackendService {
         fetch("http://localhost:8000/api/logout", {
             method: "POST"
         });
-        user.set(new User("Guest"));
+        user.update(u => {
+            u.setToGuest();
+            return u;
+        });
     }
     
     async get_users() {
@@ -56,9 +73,17 @@ class BackendService {
     async setProfile() {
         this.getProfile()
         .then(res => {
-            user.set(new User({id: res.id, email: res.email, isAdmin: res.is_admin}));
+            user.update(u => {
+                u.setToAuthorised(res.id, res.email, res.is_admin);
+                return u;
+            });
         })
-        .catch(err => user.set(new User("Guest")));
+        .catch(_ => {
+            user.update(u => {
+                u.setToGuest();
+                return u;
+            });
+        });
     }
 
     async generate(name: string, settings: Object) {

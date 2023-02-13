@@ -6,7 +6,8 @@
 
     export let data: LayoutData;
     $: {
-		if (browser && $user.isAuthorised()) {
+		let u = $user;
+		if (browser && u.isAuthorised()) {
 			goto(data.next);
 		}
     }

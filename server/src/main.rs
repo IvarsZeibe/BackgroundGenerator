@@ -46,7 +46,7 @@ async fn register(conn: Connection<'_, Db>, user: Json<viewmodels::RegisterData>
     let user = user.insert(db).await.expect("failed to register");
     let sessions = sessions.inner();
     let session_code = sessions.add(user.id);
-    cookies.add(Cookie::new("session", session_code));
+    cookies.add_private(Cookie::new("session", session_code));
     return Ok(status::Accepted(None));
 }
 

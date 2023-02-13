@@ -4,9 +4,11 @@
     let email = '';
     let password = '';
 
-    function handleSubmit(e: { preventDefault: () => void; }) {
+    async function handleSubmit(e: { preventDefault: () => void; }) {
         e.preventDefault();
-        backendService.register(email, password).then(res => console.log(res));
+        let { isOk, message } = await backendService.register(email, password);
+        console.log("Is ok: " + isOk);
+        console.log("Message: " + message);
     }
 </script>
 

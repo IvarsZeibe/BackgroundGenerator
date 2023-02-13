@@ -5,7 +5,6 @@
     let users: any[] = [];
     onMount(async () => {
         users = await backendService.get_users();
-        console.log(users);
     })
 </script>
 

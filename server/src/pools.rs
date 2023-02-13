@@ -1,6 +1,8 @@
-use sea_orm::{ConnectOptions, DatabaseConnection, ConnectionTrait, Schema};
+use sea_orm::{ConnectOptions, DatabaseConnection, ConnectionTrait, Schema, Set, ActiveModelTrait};
 use sea_orm_rocket::{rocket::figment::Figment, Config, Database};
 use std::time::Duration;
+
+use crate::models::user;
 
 #[derive(Database, Debug)]
 #[database("mydb")]
@@ -30,6 +32,7 @@ impl sea_orm_rocket::Pool for SeaOrmPool {
         }
         let conn = sea_orm::Database::connect(options).await?;
         add_tables_if_none(&conn).await;
+        add_default_admin(&conn).await;
 
         Ok(SeaOrmPool { conn })
     }
@@ -43,7 +46,20 @@ async fn add_tables_if_none(conn: &DatabaseConnection) {
     let builder = conn.get_database_backend();
     let schema = Schema::new(builder);
 
+    // add user table
     if let Err(e) = conn.execute(builder.build(&schema.create_table_from_entity(crate::models::user::Entity))).await {
         println!("Database already exists, keeping old structure {e}");
     }
+}
+
+async fn add_default_admin(db: &DatabaseConnection) {
+    let user = user::ActiveModel {
+        email: Set(String::from("admin@admin.admin")),
+        password: Set(String::from("admin123")),
+        is_admin: Set(true),
+        ..Default::default()
+    };
+    if let Err(error) = user.insert(db).await {
+        println!("Failed to add default admin: {}", error);
+    };
 }
