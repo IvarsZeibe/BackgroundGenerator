@@ -9,6 +9,14 @@
             "args": [],
             "cwd": "${workspaceFolder}/server",
             "preLaunchTask": "Build"
-        }
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Dev server",
+            "runtimeExecutable": "npm",
+            "args": ["run", "dev"],
+            "cwd": "${workspaceFolder}/client",
+        },
     ],
 }

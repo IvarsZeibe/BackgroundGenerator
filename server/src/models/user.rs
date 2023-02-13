@@ -8,6 +8,8 @@ pub struct Model {
     #[sea_orm(unique)]
     pub email: String,
     pub password: String,
+    #[sea_orm(default_value = false)]
+    pub is_admin: bool
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

@@ -13,7 +13,7 @@ async fn generate_triangles(settings: Json<viewmodels::TriangleGeneratorSettings
     let viewmodels::TriangleGeneratorSettings {width, height, edge_count, color1, color2, seed, mode} = settings.0;
     let mode = match mode {
         0 => TriangleGeneratorMode::Quad,
-        _ => TriangleGeneratorMode::Diognal
+        _ => TriangleGeneratorMode::Diagonal
     };
     
     background_generator::triangle_generator::generate(width, height, edge_count, color1, color2, seed, mode).into()

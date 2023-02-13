@@ -6,7 +6,7 @@ use bracket_color::prelude::*;
 #[derive(Copy, Clone)]
 pub enum TriangleGeneratorMode {
     Quad,
-    Diognal
+    Diagonal
 }
 
 pub fn generate(width: u32, height: u32, edge_count: u32, color1: Option<String>, color2: Option<String>, seed: Option<u64>, mode: TriangleGeneratorMode) -> ImageBuffer<Rgb<u8>, Vec<u8>> {
@@ -49,13 +49,13 @@ pub fn generate(width: u32, height: u32, edge_count: u32, color1: Option<String>
             let lerp_by = lerp_coord as f32 / (edge_count*2) as f32;
             let color = color1.lerp(color2, lerp_by);
             let color = Rgb([(color.r * 255f32) as u8, (color.g * 255f32) as u8, (color.b * 255f32) as u8]);
-            println!("{}", (255f64 * ((x + y) as f64 / 18f64)) as u8);
+            // println!("{}", (255f64 * ((x + y) as f64 / 18f64)) as u8);
             let triangle_points = [points[y * point_count as usize + x], points[y * point_count as usize + x + 1], points[(y + 1) * point_count as usize + x]];
             drawing::draw_polygon_mut(&mut image, &triangle_points, color);
             
             let lerp_coord = match mode {
                 TriangleGeneratorMode::Quad => x+y,
-                TriangleGeneratorMode::Diognal => x+y+1
+                TriangleGeneratorMode::Diagonal => x+y+1
             };
             let lerp_by = lerp_coord as f32 / (edge_count*2) as f32;
             let color = color1.lerp(color2, lerp_by);

@@ -1,3 +1,4 @@
+use rand::Rng;
 use rocket::serde::{Serialize};
 
 #[derive(Serialize)]
@@ -6,4 +7,5 @@ pub struct UserData {
     pub id: i32,
     pub email: String,
     pub password: String,
+    pub is_admin: bool,
 }
