@@ -27,8 +27,7 @@
 <h1>{toSentanceCase(generatorName)} generator</h1>
 <button on:click={generate}>Generate</button>
 
-<label for="level_of_detail">Level of detail</label>
-<input type="number" name="level_of_detail" placeholder="level_of_detail" bind:value={level_of_detail} /><br />
+<slot />
 
 <a href={src} download="image">Download</a>
 <img {src} alt="Nothing"/>

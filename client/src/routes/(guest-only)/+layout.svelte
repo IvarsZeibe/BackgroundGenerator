@@ -1,16 +1,13 @@
 <script lang="ts">
-    import { browser } from "$app/environment";
-    import { goto } from "$app/navigation";
-    import { user } from "../../stores";
-    import type { LayoutData } from "./$types";
+	import { browser } from "$app/environment";
+	import { goto } from "$app/navigation";
+	import { user } from "../../stores";
+	import type { LayoutData } from "./$types";
 
-    export let data: LayoutData;
-    $: {
-		let u = $user;
-		if (browser && u.isAuthorised()) {
-			goto(data.next);
-		}
-    }
+	export let data: LayoutData;
+	$: if (browser && $user.isAuthorised()) {
+		goto(data.next);
+	}
 </script>
 
 {#if $user.isGuest()}

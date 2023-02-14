@@ -7,16 +7,16 @@ use image::{ImageBuffer, Rgb, Rgba};
 pub struct PngImage(pub Vec<u8>);
 
 impl From<ImageBuffer<Rgb<u8>, Vec<u8>>> for PngImage {
-    fn from(image: ImageBuffer<Rgb<u8>, Vec<u8>>) -> Self {
-        let mut bytes: Vec<u8> = Vec::new();
-        image.write_to(&mut Cursor::new(&mut bytes), image::ImageOutputFormat::Png).expect("image to bytes failed");
-        PngImage(bytes)
-    }
+	fn from(image: ImageBuffer<Rgb<u8>, Vec<u8>>) -> Self {
+		let mut bytes: Vec<u8> = Vec::new();
+		image.write_to(&mut Cursor::new(&mut bytes), image::ImageOutputFormat::Png).expect("image to bytes failed");
+		PngImage(bytes)
+	}
 }
 impl From<ImageBuffer<Rgba<u8>, Vec<u8>>> for PngImage {
-    fn from(image: ImageBuffer<Rgba<u8>, Vec<u8>>) -> Self {
-        let mut bytes: Vec<u8> = Vec::new();
-        image.write_to(&mut Cursor::new(&mut bytes), image::ImageOutputFormat::Png).expect("image to bytes failed");
-        PngImage(bytes)
-    }
+	fn from(image: ImageBuffer<Rgba<u8>, Vec<u8>>) -> Self {
+		let mut bytes: Vec<u8> = Vec::new();
+		image.write_to(&mut Cursor::new(&mut bytes), image::ImageOutputFormat::Png).expect("image to bytes failed");
+		PngImage(bytes)
+	}
 }

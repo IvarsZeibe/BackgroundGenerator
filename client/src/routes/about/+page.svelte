@@ -5,5 +5,5 @@
 
 <h1>About</h1>
 <div>
-    This is a cool background generator.
+	This is a cool background generator.
 </div>
