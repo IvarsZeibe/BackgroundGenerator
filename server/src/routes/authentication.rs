@@ -1,31 +1,12 @@
-#[macro_use] extern crate rocket;
-
-use rocket::{serde::json::Json, http::{CookieJar, Cookie}, State, fs::{FileServer, Options}, response::status::{self}};
-use rocket::fs::relative;
+use rocket::{serde::json::Json, http::{CookieJar, Cookie}, State, response::status::{self}, Route};
 use sea_orm::*;
-use sea_orm_rocket::{Connection, Database};
+use sea_orm_rocket::{Connection};
 
-mod auth;
-use auth::Auth;
-mod admin_auth;
+use crate::{models::*, pools::Db, sessions::*, viewmodels};
 
-mod models;
-use models::*;
-
-mod viewmodels;
-
-mod pools;
-use pools::Db;
-
-mod sessions;
-use sessions::*;
-
-mod responders;
-
-mod routes;
-mod generator_routes;
-
-const BUILD_PATH: &str = relative!("../client/build");
+pub fn get_routes() -> impl Iterator<Item = Route> {
+	routes![register, login, logout].into_iter()
+}
 
 #[post("/api/register", data = "<user>")]
 async fn register(conn: Connection<'_, Db>, user: Json<viewmodels::RegisterData>, cookies: &CookieJar<'_>, sessions: &State<Sessions>)
@@ -83,41 +64,4 @@ async fn logout(cookies: &CookieJar<'_>, sessions: &State<Sessions>) {
 		sessions.remove(cookie.value());
 	}
 	cookies.remove_private(Cookie::named("session"));
-}
-
-#[get("/api/users")]
-async fn get_users(conn: Connection<'_, Db>, _auth: Auth) -> Json<Vec<viewmodels::UserData>> {
-	let db = conn.into_inner();
-
-	let users = user::Entity::find().all(db).await.unwrap();
-
-	let users = users.into_iter()
-		.map(|u| {
-			let user::Model { id, email, password, is_admin } = u;
-			viewmodels::UserData { id, email, password, is_admin }
-		})
-		.collect();
-	Json(users)
-}
-
-#[get("/api/profile")]
-async fn get_profile(conn: Connection<'_, Db>, auth: Auth) -> Result<Json<viewmodels::UserData>, status::NotFound<()>> {
-	let db = conn.into_inner();
-
-	let user = user::Entity::find_by_id(auth.user_id).one(db).await.unwrap();
-
-	if let Some(user::Model { id, email, password, is_admin }) = user {
-		Ok(Json(viewmodels::UserData { id, email, password, is_admin }))
-	} else {
-		Err(status::NotFound(()))
-	}
-}
-
-#[launch]
-async fn rocket() -> _ {
-	rocket::build()
-		.attach(Db::init())
-		.manage(Sessions::new())
-		.mount("/", FileServer::new(BUILD_PATH, Options::Index | Options::NormalizeDirs))
-		.mount("/", routes::get_routes())
 }
