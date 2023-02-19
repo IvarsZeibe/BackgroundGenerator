@@ -1,11 +1,10 @@
-use rocket::serde::{Deserialize};
+use rocket::serde::{Serialize};
 
-#[derive(Deserialize)]
+#[derive(Serialize)]
 #[serde(crate = "rocket::serde")]
-pub struct UserData {
+pub struct ViewableUserData {
 	pub id: i32,
 	pub email: String,
-	pub password: String,
 	#[serde(rename = "isAdmin")]
 	pub is_admin: bool,
 }

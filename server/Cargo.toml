@@ -10,3 +10,4 @@ sea-orm-rocket = "0.5.2"
 rand = "0.8.5"
 background_generator = { path = "background_generator" }
 image = "0.24.5"
+regex = "1"

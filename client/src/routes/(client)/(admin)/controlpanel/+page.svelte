@@ -1,17 +1,7 @@
 <script lang="ts">
-	import backendService from '$lib/backend-service';
-	import { onMount } from 'svelte';
-	
-	let users: any[] = [];
-	onMount(async () => {
-		users = await backendService.get_users();
-	})
+    import UsersTable from '$lib/components/UsersTable.svelte';
 </script>
 
 <div>
-	<ul>
-		{#each users as user}
-			<li>{user.email} x {user.password} x {user.is_admin}</li>
-		{/each}
-	</ul>
+	<UsersTable />
 </div>

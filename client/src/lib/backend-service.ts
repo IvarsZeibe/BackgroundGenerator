@@ -1,25 +1,27 @@
-import { User, user } from "../stores";
+import { user } from "../stores";
 
+export type UserData = {
+	id: number,
+	email: string,
+	password: string,
+	isAdmin: boolean
+};
 class BackendService {
-	async test() {
-		return fetch("http://localhost:8000");
-	}
 	async login(email: string, password: string): Promise<{ isOk: boolean, message: string }> {
 		let body: string = JSON.stringify({email: email, password: password});
-		return fetch("http://localhost:8000/api/login", {
+		let respone = await fetch("http://localhost:8000/api/login", {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json"
 			},
 			body: body
-		}).then(async res => {
-			if (res.ok) {
-				this.setProfile();
-				return { isOk: true, message: "" };
-			} else {
-				return { isOk: false, message: await res.text() };
-			}
 		});
+		if (respone.ok) {
+			this.setProfile();
+			return { isOk: true, message: "" };
+		} else {
+			return { isOk: false, message: await respone.text() };
+		}
 		
 	}
 	
@@ -42,7 +44,6 @@ class BackendService {
 	}
 
 	async logout() {
-
 		fetch("http://localhost:8000/api/logout", {
 			method: "POST"
 		});
@@ -52,7 +53,7 @@ class BackendService {
 		});
 	}
 	
-	async get_users() {
+	async getUsers(): Promise<UserData[]> {
 		return await fetch("http://localhost:8000/api/users", {
 			method: "GET",
 			headers: {
@@ -74,7 +75,7 @@ class BackendService {
 		this.getProfile()
 		.then(res => {
 			user.update(u => {
-				u.setToAuthorised(res.id, res.email, res.is_admin);
+				u.setToAuthorised(res.id, res.email, res.isAdmin);
 				return u;
 			});
 		})
@@ -96,7 +97,24 @@ class BackendService {
 			body: body
 		})
 		.then(response => response.blob());
-		// return image;
+	}
+
+	async setUserData(id: number, newId: number, email: string, password: string, isAdmin: boolean) {
+		let body = JSON.stringify({ id: newId, email, password, isAdmin });
+		return await fetch("http://localhost:8000/api/users/" + id.toString(), {
+			method: "POST",
+			headers: {
+				"Content-type": "application/json"
+			},
+			body
+		})
+		.then(response => {
+			if (response.ok) {
+				return {};
+			} else {
+				return response.json();
+			}
+		});
 	}
 }
 
