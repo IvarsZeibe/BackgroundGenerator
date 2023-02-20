@@ -6,47 +6,52 @@ export type UserData = {
 	password: string,
 	isAdmin: boolean
 };
+type VisibleUserData = {
+	id: number,
+	email: string,
+	isAdmin: boolean
+}
 class BackendService {
+	async #accessAPI(path: string, settings: RequestInit | undefined) {
+		try {
+			return await fetch("http://localhost:8000/api/" + path, settings);
+		} catch (e) {
+			throw "network error";
+		}
+	}
 	async login(email: string, password: string): Promise<{ isOk: boolean, message: string }> {
 		let body: string = JSON.stringify({email: email, password: password});
-		let respone = await fetch("http://localhost:8000/api/login", {
+		let response = await this.#accessAPI("login", {
 			method: "POST",
-			headers: {
-				"Content-Type": "application/json"
-			},
+			headers: { "Content-Type": "application/json" },
 			body: body
 		});
-		if (respone.ok) {
+		
+		if (response.ok) {
 			this.setProfile();
 			return { isOk: true, message: "" };
 		} else {
-			return { isOk: false, message: await respone.text() };
+			return { isOk: false, message: await response.text() };
 		}
-		
 	}
 	
 	async register(email: string, password: string): Promise<{ isOk: boolean, message: string }> {
 		let body: string = JSON.stringify({email: email, password: password});
-		return fetch("http://localhost:8000/api/register", {
+		let response = await this.#accessAPI("register", {
 			method: "POST",
-			headers: {
-				"Content-Type": "application/json"
-			},
+			headers: { "Content-Type": "application/json" },
 			body: body
-		}).then(async res => {
-			if (res.ok) {
-				this.setProfile();
-				return { isOk: true, message: "" };
-			} else {
-				return { isOk: false, message: await res.text() };
-			}
 		});
+		if (response.ok) {
+			this.setProfile();
+			return { isOk: true, message: "" };
+		} else {
+			return { isOk: false, message: await response.text() };
+		}
 	}
 
 	async logout() {
-		fetch("http://localhost:8000/api/logout", {
-			method: "POST"
-		});
+		this.#accessAPI("logout", { method: "POST" });
 		user.update(u => {
 			u.setToGuest();
 			return u;
@@ -54,49 +59,63 @@ class BackendService {
 	}
 	
 	async getUsers(): Promise<UserData[]> {
-		return await fetch("http://localhost:8000/api/users", {
+		let response = await this.#accessAPI("users", {
 			method: "GET",
-			headers: {
-				"Content-type": "application/json"
-			}
-		}).then(response => response.json());
+			headers: { "Content-type": "application/json" }
+		});
+		if (response.ok) {
+			return response.json();
+		} else {
+			return [];
+		}
 	}
 
-	async getProfile() {
-		return await fetch("http://localhost:8000/api/profile", {
-			method: "GET",
-			headers: {
-				"Content-type": "application/json"
+	async getProfile(): Promise<VisibleUserData | null> {
+		try {
+			let response = await this.#accessAPI("profile", {
+				method: "GET",
+				headers: { "Content-type": "application/json" }
+			});
+			if (response.ok) {
+				return response.json();
+			} else {
+				return null;
 			}
-		}).then(response => response.json());
+		} catch (e) {
+			return null;
+		}
 	}
 
 	async setProfile() {
-		this.getProfile()
-		.then(res => {
+		let profile = await this.getProfile();
+		if (profile != null) {
+			let p = profile; // helps typeScript infer the type of profile
 			user.update(u => {
-				u.setToAuthorised(res.id, res.email, res.isAdmin);
+				u.setToAuthorised(p.id, p.email, p.isAdmin);
 				return u;
 			});
-		})
-		.catch(_ => {
+		} else {
 			user.update(u => {
 				u.setToGuest();
 				return u;
 			});
-		});
+		}
 	}
 
 	async generate(name: string, settings: Object) {
 		let body: string = JSON.stringify(settings);
-		return await fetch("http://localhost:8000/api/generator/" + name, {
+		let response = await this.#accessAPI("generator/" + name, {
 			method: "POST",
 			headers: {
 				"Content-type": "application/json"
 			},
 			body: body
 		})
-		.then(response => response.blob());
+		if (response.ok) {
+			return response.blob();
+		} else {
+			throw "Image generation failed";
+		}
 	}
 
 	async setUserData(id: number, newId: number, email: string, password: string, isAdmin: boolean) {

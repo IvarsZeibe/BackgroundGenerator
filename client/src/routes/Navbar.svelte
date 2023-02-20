@@ -11,9 +11,9 @@
 		<li><a href="/signup/">Sign Up</a></li>
 		{:else if $user.isAuthorised()}
 		<li><a href="/profile/">Profile</a></li>
-		{#if $user.getAuthorisedUserData().isAdmin}
-		<li><a href="/controlpanel/">Control Panel</a></li>
-		{/if}
+			{#if $user.getAuthorisedUserData().isAdmin}
+			<li><a href="/controlpanel/">Control Panel</a></li>
+			{/if}
 		<li><a href="/signout/">Sign Out</a></li>
 		{:else}
 		<li><a style="pointer-events: none; cursor: default;" href="/">Loading...</a></li>

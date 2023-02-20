@@ -1,6 +1,6 @@
 <script lang="ts">
 	import backendService from "$lib/backend-service";
-	import { onMount } from "svelte";
+    import { data } from "../+layout.svelte";
 
 	let width = 500;
 	let height = 500;
@@ -13,13 +13,9 @@
 	let is_seed_random = true;
 	let mode = 0;
 
-	let src = "";
-	let generatorName = "triangle";
+	$data.generatorName = "triangle";
 
-	function toSentanceCase(text: string) {
-		return text.slice(0, 1).toUpperCase() + text.slice(1);
-	}
-	function generate() {
+	$data.generate = () => {
 		if (is_color1_random || !color1) {
 			// generated random hex color
 			color1 = '#'+(Math.random() * 0xFFFFFF << 0).toString(16).padStart(6, '0');
@@ -32,18 +28,13 @@
 			seed = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
 		}
 		let settings = {width: width, height: height, edge_count: edge_count, color1: color1, color2: color2, seed: seed, mode: mode};
-		backendService.generate(generatorName, settings)
+		backendService.generate($data.generatorName, settings)
 		.then(blob => {
 			let urlCreator = window.URL || window.webkitURL; // firefox/chrome
-			src = urlCreator.createObjectURL(blob);
+			$data.src = urlCreator.createObjectURL(blob);
 		});
 	}
-
-	onMount(generate);
 </script>
-
-<h1>{toSentanceCase(generatorName)} generator</h1>
-<button on:click={generate}>Generate</button>
 
 <label for="width">Width</label>
 <input type="number" name="width" placeholder="Width" bind:value={width} /><br />
@@ -73,6 +64,3 @@
 	<option value={0}>Quad</option>
 	<option value={1}>Diagonal</option>
 </select>
-
-<a href={src} download="image">Download</a>
-<img {src} alt="Nothing"/>

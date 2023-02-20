@@ -19,12 +19,6 @@
 	import { onMount } from 'svelte';
 	
 	type DialogData = typeof dialogData;
-
-	// type UserVisibleData = {
-	// 	id: number;
-	// 	email: string;
-	// 	isAdmin: boolean;
-	// };
 	
 	let users: UserData[] = [];
 	let dialogData = {
