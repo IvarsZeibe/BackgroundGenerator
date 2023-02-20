@@ -12,6 +12,10 @@
 	}
 </script>
 
+<svelte:head>
+	<title>Sign up | Background generator</title>
+</svelte:head>
+
 <h1>Sign up</h1>
 <div>
 	<form on:submit={handleSubmit}>

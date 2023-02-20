@@ -9,6 +9,11 @@
 	})
 </script>
 
+<svelte:head>
+	<title>Background generator</title>
+	<meta name="description" content="Background generator" />
+</svelte:head>
+
 <div class="app">
 	<Navbar />
 

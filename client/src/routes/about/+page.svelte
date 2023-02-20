@@ -1,6 +1,5 @@
 <svelte:head>
-	<title>About</title>
-	<meta name="description" content="About this app" />
+	<title>About | Background generator</title>
 </svelte:head>
 
 <h1>About</h1>

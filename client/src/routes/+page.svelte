@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { goto } from "$app/navigation";
+    import UsersTable from "$lib/components/UsersTable.svelte";
 
 	let generators = [{ name: "triangle" }, { name: "colorful" }];
 </script>
 
 <svelte:head>
 	<title>Background generator</title>
-	<meta name="description" content="Background generator" />
 </svelte:head>
 
 <div>
