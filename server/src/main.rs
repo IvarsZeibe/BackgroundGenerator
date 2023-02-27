@@ -20,7 +20,6 @@ use sessions::*;
 mod responders;
 
 mod routes;
-mod generator_routes;
 
 const BUILD_PATH: &str = relative!("../client/build");
 

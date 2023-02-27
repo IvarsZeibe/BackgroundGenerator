@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { goto } from "$app/navigation";
-    import UsersTable from "$lib/components/UsersTable.svelte";
 
-	let generators = [{ name: "triangle" }, { name: "colorful" }];
+	let generators = [{ name: "triangle" }, { name: "colorful" }, { name: "circle" }];
 </script>
 
 <svelte:head>

@@ -1,33 +1,39 @@
 <script lang="ts">
 	import backendService from "$lib/backend-service";
+    import Color from "$lib/color";
     import { data } from "../+layout.svelte";
 
-	let width = 500;
-	let height = 500;
-	let edge_count = 10;
+	let width = 1920;
+	let height = 1080;
+	let edgeCount = 15;
 	let color1: string;
-	let is_color1_random = true;
+	let isColor1Random = true;
 	let color2: string;
-	let is_color2_random = true;
+	let isColor2Random = true;
 	let seed: number;
-	let is_seed_random = true;
+	let isSeedRandom = true;
 	let mode = 0;
 
 	$data.generatorName = "triangle";
 
 	$data.generate = () => {
-		if (is_color1_random || !color1) {
+		if (isColor1Random || !color1) {
 			// generated random hex color
-			color1 = '#'+(Math.random() * 0xFFFFFF << 0).toString(16).padStart(6, '0');
+			color1 = Color.getRandomHex();
 		}
-		if (is_color2_random || !color2) {
+		if (isColor2Random || !color2) {
 			// generated random hex color
-			color2 = '#'+(Math.random() * 0xFFFFFF << 0).toString(16).padStart(6, '0');
+			color2 = Color.getRandomHex();
 		}
-		if (is_seed_random || !seed) {
+		if (isSeedRandom || !seed) {
 			seed = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
 		}
-		let settings = {width: width, height: height, edge_count: edge_count, color1: color1, color2: color2, seed: seed, mode: mode};
+		let settings = {
+			width, height, edgeCount,
+			color1: Color.hexToRgb(color1),
+			color2: Color.hexToRgb(color2),
+			seed, mode
+		};
 		backendService.generate($data.generatorName, settings)
 		.then(blob => {
 			let urlCreator = window.URL || window.webkitURL; // firefox/chrome
@@ -41,23 +47,23 @@
 <label for="height">Height</label>
 <input type="number" name="height" placeholder="Height" bind:value={height} /><br />
 <label for="edge_count">Edge count</label>
-<input type="number" name="edge_count" placeholder="Edge_count" bind:value={edge_count} /><br />
+<input type="number" name="edge_count" placeholder="Edge_count" bind:value={edgeCount} /><br />
 
 <label for="is_color1_random">Is random</label>
-<input type="checkbox" name="is_color1_random" bind:checked={is_color1_random} />
+<input type="checkbox" name="is_color1_random" bind:checked={isColor1Random} />
 <label for="color1">Color</label>
-<input type="color" name="color1" placeholder="Color" bind:value={color1} disabled={is_color1_random} /><br />
+<input type="color" name="color1" placeholder="Color" bind:value={color1} disabled={isColor1Random} /><br />
 
 <label for="is_color2_random">Is random</label>
-<input type="checkbox" name="is_color2_random" bind:checked={is_color2_random} />
+<input type="checkbox" name="is_color2_random" bind:checked={isColor2Random} />
 <label for="color2">Color</label>
-<input type="color" name="color2" placeholder="Color" bind:value={color2}  disabled={is_color2_random} /><br />
+<input type="color" name="color2" placeholder="Color" bind:value={color2}  disabled={isColor2Random} /><br />
 
 
 <label for="is_seed_random">Is seed random</label>
-<input type="checkbox" name="is_seed_random" bind:checked={is_seed_random} />
+<input type="checkbox" name="is_seed_random" bind:checked={isSeedRandom} />
 <label for="seed">Seed</label>
-<input type="number" name="seed" placeholder="Seed" bind:value={seed} disabled={is_seed_random} /><br />
+<input type="number" name="seed" placeholder="Seed" bind:value={seed} disabled={isSeedRandom} /><br />
 
 <label for="mode">Choose a mode:</label>
 <select name="mode" bind:value={mode}>
