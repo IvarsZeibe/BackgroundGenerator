@@ -17,6 +17,7 @@
             "runtimeExecutable": "npm",
             "args": ["run", "dev"],
             "cwd": "${workspaceFolder}/client",
+            "console": "integratedTerminal"
         },
     ],
 }

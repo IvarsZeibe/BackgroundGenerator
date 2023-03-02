@@ -11,15 +11,10 @@
   $error: color-palette.$red-700
 );
 
+@use '@material/typography/mdc-typography';
+
 html,
 body {
   background-color: #000;
   color: theme.$on-surface;
-}
-
-a {
-  color: #40b3ff;
-}
-a:visited {
-  color: color.scale(#40b3ff, $lightness: -35%);
 }

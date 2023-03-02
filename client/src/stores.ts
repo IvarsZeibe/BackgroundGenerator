@@ -38,3 +38,9 @@ export class User {
 	};
 }
 export const user: Writable<User> = writable(new User());
+export enum ThemeMode {
+	Light,
+	Dark,
+	Auto
+}
+export let themeMode = writable(ThemeMode.Auto);

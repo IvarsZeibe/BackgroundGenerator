@@ -1,22 +1,23 @@
 <script lang="ts">
+    import Button from "@smui/button";
 	import { user } from "../stores";
 </script>
 
 <div id="navbar">
-	<ul>
-		<li><a href="/">Home</a></li>
-		<li><a href="/about/">About</a></li>
+	<ul class="mdc-theme-surface">
+		<li><Button href="/">Home</Button></li>
+		<li><Button href="/about/">About</Button></li>
 		{#if $user.isGuest()}
-		<li><a href="/signin/">Sign In</a></li>
-		<li><a href="/signup/">Sign Up</a></li>
+		<li><Button href="/signin/">Sign In</Button></li>
+		<li><Button href="/signup/">Sign Up</Button></li>
 		{:else if $user.isAuthorised()}
-		<li><a href="/profile/">Profile</a></li>
+		<li><Button href="/profile/">Profile</Button></li>
 			{#if $user.getAuthorisedUserData().isAdmin}
-			<li><a href="/controlpanel/">Control Panel</a></li>
+			<li><Button href="/controlpanel/">Control Panel</Button></li>
 			{/if}
-		<li><a href="/signout/">Sign Out</a></li>
+		<li><Button href="/signout/">Sign Out</Button></li>
 		{:else}
-		<li><a style="pointer-events: none; cursor: default;" href="/">Loading...</a></li>
+		<li><Button style="pointer-events: none; cursor: default;" href="/">Loading...</Button></li>
 		{/if}
 	</ul>
 </div>
@@ -27,7 +28,7 @@ ul {
 	margin: 0;
 	padding: 0;
 	overflow: hidden;
-	background-color: #333;
+	background-color: var(--mdc-theme-surface);
 }
 
 li {
@@ -36,13 +37,8 @@ li {
 
 a {
 	display: block;
-	color: white;
 	text-align: center;
 	padding: 14px 16px;
 	text-decoration: none;
-}
-
-a:hover {
-	background-color: #111;
 }
 </style>
