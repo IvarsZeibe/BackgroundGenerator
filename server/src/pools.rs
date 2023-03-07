@@ -48,7 +48,11 @@ async fn add_tables_if_none(conn: &DatabaseConnection) {
 
 	// add user table
 	if let Err(e) = conn.execute(builder.build(&schema.create_table_from_entity(crate::models::user::Entity))).await {
-		println!("Database already exists, keeping old structure {e}");
+		println!("Users table already exists, keeping old structure {e}");
+	}
+	// add profile settings table
+	if let Err(e) = conn.execute(builder.build(&schema.create_table_from_entity(crate::models::settings::Entity))).await {
+		println!("Settings table already exists, keeping old structure {e}");
 	}
 }
 

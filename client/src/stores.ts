@@ -39,8 +39,8 @@ export class User {
 }
 export const user: Writable<User> = writable(new User());
 export enum ThemeMode {
-	Light,
-	Dark,
-	Auto
+	Light = 0,
+	Dark = 1,
+	UseDeviceTheme = 2
 }
-export let themeMode = writable(ThemeMode.Auto);
+export let themeMode: Writable<ThemeMode | null> = writable(null);

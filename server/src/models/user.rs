@@ -14,6 +14,14 @@ pub struct Model {
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
+	#[sea_orm(has_one = "super::settings::Entity")]
+	Settings
+}
+
+impl Related<super::settings::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::Settings.def()
+    }
 }
 
 impl ActiveModelBehavior for ActiveModel {}

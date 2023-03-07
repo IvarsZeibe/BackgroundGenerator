@@ -1,4 +1,5 @@
-import { user } from "../stores";
+import { get } from "svelte/store";
+import { themeMode, ThemeMode, user } from "../stores";
 
 export type UserData = {
 	id: number,
@@ -56,6 +57,7 @@ class BackendService {
 			u.setToGuest();
 			return u;
 		});
+		themeMode.set(ThemeMode.UseDeviceTheme);
 	}
 	
 	async getUsers(): Promise<UserData[]> {
@@ -94,6 +96,7 @@ class BackendService {
 				u.setToAuthorised(p.id, p.email, p.isAdmin);
 				return u;
 			});
+			themeMode.set(await this.getUserPreferredTheme());
 		} else {
 			user.update(u => {
 				u.setToGuest();
@@ -134,6 +137,27 @@ class BackendService {
 				return response.json();
 			}
 		});
+	}
+	async setUserPreferredTheme(preferredTheme: ThemeMode) {
+		themeMode.set(preferredTheme);
+		let u = get(user);
+		if (u.isAuthorised()) {
+			let response = await this.#accessAPI("profile/theme", {
+				method: "POST",
+				body: preferredTheme.toString()
+			});
+			if (!response.ok) {
+				throw "Failed to save preferred theme";
+			}
+		}
+	}
+	async getUserPreferredTheme() {
+		let response = await this.#accessAPI("profile/theme", { method: "GET" });
+		if (response.ok) {
+			return parseInt(await response.text()) as ThemeMode;
+		} else {
+			throw "Failed to get preferrred theme";
+		}
 	}
 }
 
