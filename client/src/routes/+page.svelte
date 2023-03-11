@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { goto } from "$app/navigation";
+    import type { PageData } from "./$types";
 
-	let generators = [{ name: "triangle" }, { name: "colorful" }, { name: "circle" }];
+	export let data: PageData;
 </script>
 
 <svelte:head>
@@ -12,9 +13,9 @@
 	<h1>Background generator</h1>
 	<h2>Choose a generator:</h2>
 	<ul>
-		{#each generators as generator}
+		{#each data.generators as generator}
 		<li>
-			<button on:click={() => {goto(`/${generator.name}`)}}>{generator.name}</button>
+			<button on:click={() => {goto(`/${generator.code}`)}}>{generator.name}</button>
 		</li>
 		{/each}
 	</ul>

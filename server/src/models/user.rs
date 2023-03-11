@@ -13,15 +13,27 @@ pub struct Model {
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
-pub enum Relation {
-	#[sea_orm(has_one = "super::settings::Entity")]
-	Settings
-}
+pub enum Relation {}
 
-impl Related<super::settings::Entity> for Entity {
+impl Related<super::user_settings::Entity> for Entity {
     fn to() -> RelationDef {
-        Relation::Settings.def()
+		super::user_settings::Relation::User.def().rev()
     }
 }
+
+impl Related<super::generator_description::Entity> for Entity {
+    fn to() -> RelationDef {
+		super::generator_description::Relation::User.def().rev()
+    }
+}
+
+// impl Related<super::generator_type::Entity> for Entity {
+//     fn to() -> RelationDef {
+// 		super::generator_description::Relation::GeneratorType.def()
+//     }
+// 	fn via() -> Option<RelationDef> {
+// 		Some(super::generator_description::Relation::User.def().rev())
+// 	}
+// }
 
 impl ActiveModelBehavior for ActiveModel {}

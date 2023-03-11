@@ -12,6 +12,14 @@ type VisibleUserData = {
 	email: string,
 	isAdmin: boolean
 }
+export type GeneratorDescription = {
+	id: string,
+	name: string,
+	description: string,
+	dateCreated: Date,
+	generatorType: string,
+	generatorTypeCode: string
+}
 class BackendService {
 	async #accessAPI(path: string, settings: RequestInit | undefined) {
 		try {
@@ -119,6 +127,43 @@ class BackendService {
 		} else {
 			throw "Image generation failed";
 		}
+	}
+
+	async saveGenerator(type: string, name: string, description: string, generatorSettings: { [key: string]: any}) {
+		let body: string = JSON.stringify({ name, description, generatorSettings });
+		await this.#accessAPI("generator/" + type + "/save", {
+			method: "POST",
+			headers: {
+				"Content-type": "application/json"
+			},
+			body: body
+		});
+	}
+
+	async getMyGenerators(): Promise<GeneratorDescription[]> {
+		let response = await this.#accessAPI("myGenerators", {
+			method: "GET"
+		});
+		let res: GeneratorDescription[] = await response.json();
+		let generators = res.map(generator => {
+			return {
+				...generator,
+				dateCreated: new Date(generator.dateCreated)
+			};
+		}) 
+		return generators;
+	}
+	async getMyGenerator(name: string, id: string) {
+		let response = await this.#accessAPI("generator/" + name + "/" + id, {
+			method: "GET"
+		});
+		return await response.json();
+	}
+	async getGenerators() {
+		let response = await this.#accessAPI("generators", {
+			method: "GET"
+		});
+		return await response.json();
 	}
 
 	async setUserData(id: number, newId: number, email: string, password: string, isAdmin: boolean) {

@@ -1,42 +1,48 @@
-use background_generator::triangle_generator::TriangleGeneratorMode;
-use rand::Rng;
+use background_generator::triangles_generator::TriangleGeneratorMode;
+use chrono::Local;
 use rocket::{serde::json::Json, Route};
-use viewmodels::generator_settings;
+use sea_orm_rocket::Connection;
+use sea_orm::*;
 
-use crate::{responders::PngImage, viewmodels};
+mod triangles_generator;
+mod circles_generator;
+mod chains_generator;
+
+use crate::{responders::PngImage, viewmodels::{generator_settings::{self, MyGenerator}, self, generator_type::GeneratorType}, pools::Db, auth::Auth, models::{generator_description, triangles_generator_settings, self, generator_type}};
 
 pub fn get_routes() -> impl Iterator<Item = Route> {
-	routes![generate_triangles, generate_colorful, generate_circles]
-		.into_iter()
+	return triangles_generator::get_routes()
+		.chain(circles_generator::get_routes())
+		.chain(chains_generator::get_routes())
 		.map(|el|
 			el.map_base(|base|
 				format!("{}{}", "/api/generator", base)
 			).unwrap()
 		)
+		.chain(routes![get_generator_types]);
 }
 
-#[post("/triangle", data = "<settings>")]
-async fn generate_triangles(settings: Json<generator_settings::Triangle>) -> PngImage {
-	let generator_settings::Triangle {width, height, edge_count, color1, color2, seed, mode} = settings.0;
-	let mode = match mode {
-		0 => TriangleGeneratorMode::Quad,
-		_ => TriangleGeneratorMode::Diagonal
+async fn save_generator_description(db: &DatabaseConnection, user_id: i32, name: String, description: String, generator_type: i32) -> Result<(generator_description::Model), DbErr> {
+	let generator = generator_description::ActiveModel {
+		id: Set(uuid::Uuid::now_v7().to_string()),
+		name: Set(name),
+		description: Set(description),
+		user_id: Set(user_id),
+		date_created: Set(Local::now().naive_local()),
+		generator_type: Set(generator_type),
+		..Default::default()
 	};
-	
-	background_generator::triangle_generator::generate(width, height, edge_count, color1, color2, seed, mode).into()
+	Ok(generator.insert(db).await?)
 }
 
-#[post("/colorful", data = "<settings>")]
-async fn generate_colorful(settings: Json<generator_settings::Colorful>) -> PngImage {
-	let settings = settings.0;
-	
-	background_generator::colorful_image_generator::generate(settings.level_of_detail, 10, None).into()
-}
-#[post("/circles", data = "<settings>")]
-async fn generate_circles(settings: Json<generator_settings::Circle>) -> PngImage {
-	let generator_settings::Circle {
-		width, height, circle_count, max_circle_size, color1, color2, background_color, seed 
-	} = settings.0;
-	
-	background_generator::circles_generator::generate(width, height, circle_count, max_circle_size, color1, color2, background_color, seed).into()
+#[get("/api/generators")]
+async fn get_generator_types(conn: Connection<'_, Db>) -> Json<Vec<GeneratorType>> {
+	let db = conn.into_inner();
+	let types = generator_type::Entity::find().all(db).await.unwrap();
+	Json(types.into_iter().map(|t| {
+		GeneratorType {
+			code: t.code,
+			name: t.name
+		}
+	}).collect())	
 }

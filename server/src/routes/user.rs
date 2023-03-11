@@ -1,11 +1,11 @@
-use rocket::{serde::json::Json, response::status::{self}, Route};
+use rocket::{serde::json::Json, response::{status::{self}, Redirect}, Route, futures};
 use sea_orm::*;
-use sea_orm_rocket::{Connection};
+use sea_orm_rocket::Connection;
 
-use crate::{models::{*, settings::PreferredTheme}, pools::Db, viewmodels, auth::Auth};
+use crate::{models::{*, sea_orm_active_enums::PreferredTheme, self}, pools::Db, viewmodels::{self, generator_settings::MyGenerator}, auth::Auth};
 
 pub fn get_routes() -> impl Iterator<Item = Route> {
-	routes![get_profile, get_preferred_theme, set_preferred_theme].into_iter()
+	routes![get_profile, get_preferred_theme, set_preferred_theme, get_my_generators].into_iter()
 }
 
 #[get("/api/profile")]
@@ -28,7 +28,7 @@ async fn get_preferred_theme(conn: Connection<'_, Db>, auth: Auth) -> Result<Str
 	let user = user::Entity::find_by_id(auth.user_id).one(db).await.unwrap();
 	let user = user.unwrap();
 
-	let settings = user.find_related(settings::Entity).one(db).await.unwrap();
+	let settings = user.find_related(user_settings::Entity).one(db).await.unwrap();
 
 	if let Some(settings) = settings {
 		return Ok(settings.preferred_theme.to_string());
@@ -43,20 +43,8 @@ async fn set_preferred_theme(preferred_theme: String, conn: Connection<'_, Db>, 
 
 	let user = user::Entity::find_by_id(auth.user_id).one(db).await.unwrap();
 	let user = user.unwrap();
-	let settings = user.find_related(settings::Entity).one(db).await.unwrap();
+	let mut settings: user_settings::ActiveModel = user.find_related(user_settings::Entity).one(db).await.unwrap().unwrap().into();
 
-	let mut settings: settings::ActiveModel = match settings {
-		Some(s) => s.into(),
-		None => {
-			let settings = settings::ActiveModel {
-				user_id: Set(user.id),
-				// id: Set(user.id),
-				preferred_theme: Set(PreferredTheme::Light),
-				..Default::default()
-			};
-			settings.insert(db).await.unwrap().into()
-		}
-	};
 	if preferred_theme == "0" {
 		settings.preferred_theme = Set(PreferredTheme::Light);
 	} else if preferred_theme == "1" {
@@ -65,4 +53,25 @@ async fn set_preferred_theme(preferred_theme: String, conn: Connection<'_, Db>, 
 		settings.preferred_theme = Set(PreferredTheme::UseDeviceTheme);
 	}
 	settings.update(db).await.unwrap();
+}
+
+#[get("/api/myGenerators")]
+async fn get_my_generators(conn: Connection<'_, Db>, auth: Auth) -> Json<Vec<MyGenerator>> {
+	let db = conn.into_inner();
+	let user = models::user::Entity::find_by_id(auth.user_id).one(db).await.unwrap().unwrap();
+	let generators = user.find_related(models::generator_description::Entity).all(db).await.unwrap();
+	
+	async fn to_my_generator(g: generator_description::Model, db: &DatabaseConnection) -> MyGenerator {
+		let generator_type = models::generator_type::Entity::find_by_id(g.generator_type).one(db).await.unwrap().unwrap();
+		MyGenerator {
+			id: g.id,
+			name: g.name,
+			description: g.description,
+			date_created: g.date_created,
+			generator_type: generator_type.name,
+			generator_code: generator_type.code
+		}
+	}
+
+	Json(futures::future::join_all(generators.into_iter().map(|g| to_my_generator(g, db))).await)
 }

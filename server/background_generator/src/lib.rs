@@ -1,35 +1,17 @@
-use std::io::{Bytes, Cursor};
+use std::{io::{Bytes, Cursor}, num::ParseIntError};
 
 use image::{ImageBuffer, Rgb};
 
 pub mod colorful_image_generator;
-pub mod triangle_generator;
+pub mod triangles_generator;
 pub mod circles_generator;
-// pub fn add(left: usize, right: usize) -> usize {
-//     left + right
-// }
+pub mod chains_generator;
 
-// pub trait Generator<T> {
-//     fn generate() -> T;
-// }
-
-// pub struct TriangleGenerator;
-// impl Generator<Vec<u8>> for TriangleGenerator {
-//     fn generate() -> Vec<u8> {
-//         let image: ImageBuffer<Rgb<u8>, Vec<u8>> = ImageBuffer::from_pixel(500, 500, Rgb([255, 0, 0]));
-//         let mut bytes: Vec<u8> = Vec::new();
-//         image.write_to(&mut Cursor::new(&mut bytes), image::ImageOutputFormat::Png).expect("image to bytes failed");
-//         bytes
-//     }
-// }
-
-#[cfg(test)]
-mod tests {
-	use super::*;
-
-	#[test]
-	fn it_works() {
-		let result = add(2, 2);
-		assert_eq!(result, 4);
-	}
+// converts #FFFFFF to [255, 255, 255]
+pub fn hex_to_u8_color(color: String) -> Result<[u8; 3], ParseIntError> {
+	Ok([
+		u8::from_str_radix(&color[1..3], 16)?,
+		u8::from_str_radix(&color[3..5], 16)?,
+		u8::from_str_radix(&color[5..7], 16)?
+	])
 }

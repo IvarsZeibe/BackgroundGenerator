@@ -1,7 +1,9 @@
 use sea_orm::entity::prelude::*;
 
+use super::sea_orm_active_enums::PreferredTheme;
+
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel)]
-#[sea_orm(table_name = "settings")]
+#[sea_orm(table_name = "user_settings")]
 pub struct Model {
 	#[sea_orm(primary_key)]
 	pub id: i32,
@@ -26,11 +28,3 @@ impl Related<super::user::Entity> for Entity {
 }
 
 impl ActiveModelBehavior for ActiveModel {}
-
-#[derive(Debug, Clone, PartialEq, Eq, EnumIter, DeriveActiveEnum)]
-#[sea_orm(rs_type = "i32", db_type = "Integer")]
-pub enum PreferredTheme {
-	Light = 0,
-	Dark = 1,
-	UseDeviceTheme = 2
-}

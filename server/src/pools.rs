@@ -2,7 +2,7 @@ use sea_orm::{ConnectOptions, DatabaseConnection, ConnectionTrait, Schema, Set, 
 use sea_orm_rocket::{rocket::figment::Figment, Config, Database};
 use std::time::Duration;
 
-use crate::models::user;
+use crate::models::{user, user_settings, sea_orm_active_enums::PreferredTheme};
 
 #[derive(Database, Debug)]
 #[database("mydb")]
@@ -51,8 +51,47 @@ async fn add_tables_if_none(conn: &DatabaseConnection) {
 		println!("Users table already exists, keeping old structure {e}");
 	}
 	// add profile settings table
-	if let Err(e) = conn.execute(builder.build(&schema.create_table_from_entity(crate::models::settings::Entity))).await {
+	if let Err(e) = conn.execute(builder.build(&schema.create_table_from_entity(crate::models::user_settings::Entity))).await {
 		println!("Settings table already exists, keeping old structure {e}");
+	}
+	// add generator description table
+	if let Err(e) = conn.execute(builder.build(&schema.create_table_from_entity(crate::models::generator_description::Entity))).await {
+		println!("Generator description table already exists, keeping old structure {e}");
+	}
+	// add generator type table
+	if let Err(e) = conn.execute(builder.build(&schema.create_table_from_entity(crate::models::generator_type::Entity))).await {
+		println!("Generator type table already exists, keeping old structure {e}");
+	}
+	let triangles_type = crate::models::generator_type::ActiveModel {
+		id: Set(0),
+		name: Set("Triangles generator".to_string()),
+		code: Set("triangles".to_string()),
+		..Default::default()
+	};
+	triangles_type.insert(conn).await;
+	let circles_type = crate::models::generator_type::ActiveModel {
+		id: Set(1),
+		name: Set("Circles generator".to_string()),
+		code: Set("circles".to_string()),
+		..Default::default()
+	};
+	circles_type.insert(conn).await;
+	let chains_type = crate::models::generator_type::ActiveModel {
+		id: Set(2),
+		name: Set("Chains generator".to_string()),
+		code: Set("chains".to_string()),
+		..Default::default()
+	};
+	chains_type.insert(conn).await;
+	
+	if let Err(e) = conn.execute(builder.build(&schema.create_table_from_entity(crate::models::triangles_generator_settings::Entity))).await {
+		println!("Triangles generator settings table already exists, keeping old structure {e}");
+	}
+	if let Err(e) = conn.execute(builder.build(&schema.create_table_from_entity(crate::models::circles_generator_settings::Entity))).await {
+		println!("Circles generator settings table already exists, keeping old structure {e}");
+	}
+	if let Err(e) = conn.execute(builder.build(&schema.create_table_from_entity(crate::models::chains_generator_settings::Entity))).await {
+		println!("Chains generator settings table already exists, keeping old structure {e}");
 	}
 }
 
@@ -63,7 +102,15 @@ async fn add_default_admin(db: &DatabaseConnection) {
 		is_admin: Set(true),
 		..Default::default()
 	};
-	if let Err(error) = user.insert(db).await {
-		println!("Failed to add default admin: {}", error);
-	};
+	match user.insert(db).await {
+		Err(error) => println!("Failed to add default admin: {}", error),
+		Ok(user) => {
+			let user_settings = user_settings::ActiveModel {
+				user_id: Set(user.id),
+				preferred_theme: Set(PreferredTheme::UseDeviceTheme),
+				..Default::default()
+			};
+			user_settings.insert(db).await.unwrap();
+		}
+	}
 }

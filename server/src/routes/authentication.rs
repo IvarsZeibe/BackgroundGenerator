@@ -2,7 +2,7 @@ use rocket::{serde::json::Json, http::{CookieJar, Cookie}, State, response::stat
 use sea_orm::*;
 use sea_orm_rocket::{Connection};
 
-use crate::{models::*, pools::Db, sessions::*, viewmodels};
+use crate::{models::{*, sea_orm_active_enums::PreferredTheme}, pools::Db, sessions::*, viewmodels};
 
 pub fn get_routes() -> impl Iterator<Item = Route> {
 	routes![register, login, logout].into_iter()
@@ -26,6 +26,14 @@ async fn register(conn: Connection<'_, Db>, user: Json<viewmodels::RegisterData>
 		..Default::default()
 	};
 	let user = user.insert(db).await.expect("failed to register");
+
+	let user_settings = user_settings::ActiveModel {
+		user_id: Set(user.id),
+		preferred_theme: Set(PreferredTheme::UseDeviceTheme),
+		..Default::default()
+	};
+	user_settings.insert(db).await.unwrap();
+	
 	let sessions = sessions.inner();
 	let session_code = sessions.add(user.id);
 	cookies.add_private(Cookie::new("session", session_code));
