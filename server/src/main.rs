@@ -1,11 +1,12 @@
-#[macro_use] extern crate rocket;
+#[macro_use]
+extern crate rocket;
 
-use rocket::{fs::{FileServer, Options}};
 use rocket::fs::relative;
-use sea_orm_rocket::{Database};
+use rocket::fs::{FileServer, Options};
+use sea_orm_rocket::Database;
 
-mod auth;
 mod admin_auth;
+mod auth;
 
 mod models;
 
@@ -25,9 +26,12 @@ const BUILD_PATH: &str = relative!("../client/build");
 
 #[launch]
 async fn rocket() -> _ {
-	rocket::build()
-		.attach(Db::init())
-		.manage(Sessions::new())
-		.mount("/", FileServer::new(BUILD_PATH, Options::Index | Options::NormalizeDirs))
-		.mount("/", routes::get_routes())
+    rocket::build()
+        .attach(Db::init())
+        .manage(Sessions::new())
+        .mount(
+            "/",
+            FileServer::new(BUILD_PATH, Options::Index | Options::NormalizeDirs),
+        )
+        .mount("/", routes::get_routes())
 }
