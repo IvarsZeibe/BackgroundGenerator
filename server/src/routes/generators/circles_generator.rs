@@ -8,21 +8,20 @@ use sea_orm_rocket::Connection;
 
 use crate::{
     auth::Auth,
-    models::{
-        circles_generator_settings, generator_description
-    },
+    models::{circles_generator_settings, generator_description},
     pools::Db,
     responders::PngImage,
     viewmodels::generator_settings::{self, Circles},
 };
 
-use super::save_generator_description;
+use super::{modify_generator_description, save_generator_description};
 
 pub fn get_routes() -> impl Iterator<Item = Route> {
     return routes![
         generate_circles,
         save_circles_generator_settings,
-        get_circles_generator_settings
+        get_circles_generator_settings,
+        modify_circles_generator_settings
     ]
     .into_iter()
     .map(|el| {
@@ -98,21 +97,55 @@ async fn save_circles_generator_settings(
     Ok(Accepted(None))
 }
 
+#[post("/<id>/save", data = "<settings>")]
+async fn modify_circles_generator_settings(
+    id: String,
+    settings: Json<generator_settings::Settings<generator_settings::Circles>>,
+    conn: Connection<'_, Db>,
+    auth: Auth,
+) -> Result<Accepted<()>, BadRequest<()>> {
+    let db = conn.into_inner();
+    let generator_settings::Settings::<generator_settings::Circles> {
+        name,
+        description,
+        generator_settings,
+    } = settings.into_inner();
+
+    modify_generator_description(db, id.clone(), auth.user_id, name, description).await?;
+
+    let mut settings: circles_generator_settings::ActiveModel =
+        circles_generator_settings::Entity::find_by_id(id)
+            .one(db)
+            .await
+            .unwrap()
+            .unwrap()
+            .into();
+    settings.width = Set(generator_settings.width);
+    settings.height = Set(generator_settings.height);
+    settings.circle_count = Set(generator_settings.circle_count);
+    settings.max_circle_size = Set(generator_settings.circle_count);
+    settings.color1 = Set(generator_settings.color1);
+    settings.color2 = Set(generator_settings.color2);
+    settings.background_color = Set(generator_settings.background_color);
+    settings.seed = Set(generator_settings.seed);
+    settings.save(db).await.unwrap();
+
+    Ok(Accepted(None))
+}
+
 #[get("/<id>")]
 async fn get_circles_generator_settings(
     id: String,
     auth: Auth,
     conn: Connection<'_, Db>,
-) -> Result<Json<generator_settings::Circles>, NotFound<()>> {
+) -> Result<Json<generator_settings::Settings<generator_settings::Circles>>, NotFound<()>> {
     let db = conn.into_inner();
-    if generator_description::Entity::find_by_id(id.clone())
+    let generator_description = generator_description::Entity::find_by_id(id.clone())
         .one(db)
         .await
         .unwrap()
-        .unwrap()
-        .user_id
-        != auth.user_id
-    {
+        .unwrap();
+    if generator_description.user_id != auth.user_id {
         return Err(NotFound(()));
     }
     let settings = circles_generator_settings::Entity::find_by_id(id.clone())
@@ -130,5 +163,11 @@ async fn get_circles_generator_settings(
         seed: settings.seed,
         width: settings.width,
     };
-    return Ok(Json(settings));
+    return Ok(Json(generator_settings::Settings::<
+        generator_settings::Circles,
+    > {
+        description: generator_description.description,
+        name: generator_description.name,
+        generator_settings: settings,
+    }));
 }

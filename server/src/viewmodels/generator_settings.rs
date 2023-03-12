@@ -1,7 +1,7 @@
 use chrono::NaiveDateTime;
 use rocket::serde::{Deserialize, Serialize};
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Serialize)]
 #[serde(crate = "rocket::serde")]
 pub struct Settings<T> {
     pub name: String,

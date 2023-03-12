@@ -35,18 +35,47 @@
 	$context.isPreloaded = !!data.id;
 	let isDialogOpen = false;
 
+	$context.name = "";
+	$context.description = "";
+	let previousName = "";
+	let previousDescription = "";
+
 	function toSentanceCase(text: string) {
 		return text.slice(0, 1).toUpperCase() + text.slice(1);
 	}
 	function openSaveDialog() {
 		isDialogOpen = true;
 	}
-	function save() {
-		backendService.saveGenerator($context.generatorTypeName, $context.name, $context.description, $context.generatorSettings);
+	async function save() {
+		let response = await backendService.saveGenerator($context.generatorTypeName, $context.name, $context.description, $context.generatorSettings);
+		if (response.ok) {
+			previousName = $context.name;
+			previousDescription = $context.description;
+			data.id = await response.text();
+		} else {
+			console.log("Saving failed");
+		}
+	}
+	function cancel() {
+		$context.name = previousName;
+		$context.description = previousDescription;
+	}
+	function saveChanges() {
+		if (!data.id) {
+			return;
+		}
+		backendService.saveGeneratorChanges($context.generatorTypeName, data.id, $context.name, $context.description, $context.generatorSettings);
+		previousName = $context.name;
+		previousDescription = $context.description;
 	}
 	onMount(async () => {
 		if (data.id) {
-			$context.generatorSettings = await backendService.getMyGenerator($context.generatorTypeName, data.id);
+			let generatorInfo = await backendService.getMyGenerator($context.generatorTypeName, data.id);
+			$context.name = generatorInfo.name;
+			$context.description = generatorInfo.description;
+			previousName = $context.name;
+			previousDescription = $context.description;
+			$context.generatorSettings = generatorInfo.generatorSettings;
 		}
 		$context.generate();
 	});
@@ -89,18 +118,27 @@
 			>
 				<!-- <HelperText validationMsg slot="helper">{dialogData.id.errorMessage}</HelperText> -->
 			</Textfield>
-			<br>
-			<Label>Generator settings</Label><br>
+			<!-- <br>
+			<h2>Generator settings</h2>
 			{#each Object.keys($context.generatorSettings) as key}
-				{key}: {$context.generatorSettings[key]}<br>
-			{/each}
+				<span class="test">{key}:</span> {$context.generatorSettings[key]}<br>
+			{/each} -->
 		</div>
 	</Content>
 	<Actions>
+		{#if data.id}
+		<Button on:click={saveChanges}>
+			<Label>Save changes</Label>
+		</Button>
+		<Button on:click={save}>
+			<Label>Save as new</Label>
+		</Button>
+		{:else}
 		<Button on:click={save}>
 			<Label>Save</Label>
 		</Button>
-		<Button>
+		{/if}
+		<Button on:click={cancel}>
 			<Label>Cancel</Label>
 		</Button>
 	</Actions>

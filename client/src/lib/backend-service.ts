@@ -131,7 +131,18 @@ class BackendService {
 
 	async saveGenerator(type: string, name: string, description: string, generatorSettings: { [key: string]: any}) {
 		let body: string = JSON.stringify({ name, description, generatorSettings });
-		await this.#accessAPI("generator/" + type + "/save", {
+		return await this.#accessAPI("generator/" + type + "/save", {
+			method: "POST",
+			headers: {
+				"Content-type": "application/json"
+			},
+			body: body
+		});
+	}
+	
+	async saveGeneratorChanges(type: string, id: string, name: string, description: string, generatorSettings: { [key: string]: any}) {
+		let body: string = JSON.stringify({ name, description, generatorSettings });
+		await this.#accessAPI("generator/" + type + "/" + id + "/save", {
 			method: "POST",
 			headers: {
 				"Content-type": "application/json"

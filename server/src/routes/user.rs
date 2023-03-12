@@ -1,9 +1,4 @@
-use rocket::{
-    futures,
-    response::status,
-    serde::json::Json,
-    Route,
-};
+use rocket::{futures, response::status, serde::json::Json, Route};
 use sea_orm::*;
 use sea_orm_rocket::Connection;
 

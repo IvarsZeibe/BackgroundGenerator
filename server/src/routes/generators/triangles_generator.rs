@@ -15,13 +15,14 @@ use crate::{
     viewmodels::generator_settings::{self, Triangles},
 };
 
-use super::save_generator_description;
+use super::{modify_generator_description, save_generator_description};
 
 pub fn get_routes() -> impl Iterator<Item = Route> {
     return routes![
         generate_triangles,
         save_triangles_generator_settings,
-        get_triangles_generator_settings
+        get_triangles_generator_settings,
+        modify_triangles_generator_settings
     ]
     .into_iter()
     .map(|el| {
@@ -69,7 +70,7 @@ async fn save_triangles_generator_settings(
     settings: Json<generator_settings::Settings<generator_settings::Triangles>>,
     conn: Connection<'_, Db>,
     auth: Auth,
-) -> Result<Accepted<()>, BadRequest<()>> {
+) -> Result<Accepted<String>, BadRequest<()>> {
     let db = conn.into_inner();
     let generator_settings::Settings::<generator_settings::Triangles> {
         name,
@@ -90,11 +91,49 @@ async fn save_triangles_generator_settings(
         mode: Set(generator_settings.mode),
     };
 
-    if let Err(error) = settings.insert(db).await {
-        generator_description.delete(db).await.unwrap();
-        println!("{error}");
-        return Err(BadRequest(None));
+    let settings = match settings.insert(db).await {
+        Ok(s) => s,
+        Err(e) => {
+            generator_description.delete(db).await.unwrap();
+            println!("{e}");
+            return Err(BadRequest(None));
+        }
     };
+    Ok(Accepted(Some(settings.id)))
+}
+
+#[post("/<id>/save", data = "<settings>")]
+async fn modify_triangles_generator_settings(
+    id: String,
+    settings: Json<generator_settings::Settings<generator_settings::Triangles>>,
+    conn: Connection<'_, Db>,
+    auth: Auth,
+) -> Result<Accepted<()>, BadRequest<()>> {
+    let db = conn.into_inner();
+    let generator_settings::Settings::<generator_settings::Triangles> {
+        name,
+        description,
+        generator_settings,
+    } = settings.into_inner();
+
+    modify_generator_description(db, id.clone(), auth.user_id, name, description).await?;
+
+    let mut settings: triangles_generator_settings::ActiveModel =
+        triangles_generator_settings::Entity::find_by_id(id)
+            .one(db)
+            .await
+            .unwrap()
+            .unwrap()
+            .into();
+    settings.width = Set(generator_settings.width);
+    settings.height = Set(generator_settings.height);
+    settings.edge_count = Set(generator_settings.edge_count);
+    settings.color1 = Set(generator_settings.color1);
+    settings.color2 = Set(generator_settings.color2);
+    settings.seed = Set(generator_settings.seed);
+    settings.mode = Set(generator_settings.mode);
+    settings.save(db).await.unwrap();
+
     Ok(Accepted(None))
 }
 
@@ -103,16 +142,14 @@ async fn get_triangles_generator_settings(
     id: String,
     auth: Auth,
     conn: Connection<'_, Db>,
-) -> Result<Json<generator_settings::Triangles>, NotFound<()>> {
+) -> Result<Json<generator_settings::Settings<generator_settings::Triangles>>, NotFound<()>> {
     let db = conn.into_inner();
-    if generator_description::Entity::find_by_id(id.clone())
+    let generator_description = generator_description::Entity::find_by_id(id.clone())
         .one(db)
         .await
         .unwrap()
-        .unwrap()
-        .user_id
-        != auth.user_id
-    {
+        .unwrap();
+    if generator_description.user_id != auth.user_id {
         return Err(NotFound(()));
     }
     let settings = triangles_generator_settings::Entity::find_by_id(id.clone())
@@ -129,5 +166,11 @@ async fn get_triangles_generator_settings(
         seed: settings.seed,
         width: settings.width,
     };
-    return Ok(Json(settings));
+    return Ok(Json(generator_settings::Settings::<
+        generator_settings::Triangles,
+    > {
+        description: generator_description.description,
+        name: generator_description.name,
+        generator_settings: settings,
+    }));
 }

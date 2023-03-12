@@ -1,7 +1,7 @@
-use std::f32::consts::SQRT_2;
 use image::{ImageBuffer, Rgb};
 use imageproc::{drawing, pixelops::interpolate};
 use rand::{Rng, SeedableRng};
+use std::f32::consts::SQRT_2;
 
 pub fn generate(
     width: u32,

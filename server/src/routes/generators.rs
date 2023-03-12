@@ -1,5 +1,5 @@
 use chrono::Local;
-use rocket::{serde::json::Json, Route};
+use rocket::{response::status::BadRequest, serde::json::Json, Route};
 use sea_orm::*;
 use sea_orm_rocket::Connection;
 
@@ -41,6 +41,29 @@ async fn save_generator_description(
         ..Default::default()
     };
     Ok(generator.insert(db).await?)
+}
+
+async fn modify_generator_description(
+    db: &DatabaseConnection,
+    id: String,
+    user_id: i32,
+    name: String,
+    description: String,
+) -> Result<(), BadRequest<()>> {
+    let generator_description = generator_description::Entity::find_by_id(id)
+        .one(db)
+        .await
+        .unwrap()
+        .unwrap();
+    if generator_description.user_id != user_id {
+        return Err(BadRequest(None));
+    }
+    let mut generator_description: generator_description::ActiveModel =
+        generator_description.into();
+    generator_description.name = Set(name);
+    generator_description.description = Set(description);
+    generator_description.save(db).await.unwrap();
+    Ok(())
 }
 
 #[get("/api/generators")]

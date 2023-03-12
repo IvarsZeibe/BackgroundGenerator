@@ -1,6 +1,4 @@
-use std::{
-    num::ParseIntError,
-};
+use std::num::ParseIntError;
 
 pub mod chains_generator;
 pub mod circles_generator;

@@ -1,11 +1,12 @@
 import { browser } from "$app/environment";
+import backendService from "$lib/backend-service";
 import type { LayoutLoad } from "../$types";
 
  
-export const load = (({ url }) => {
-	let id: string | null = null;
+export const load = (async ({ url }) => {
 	if (browser) {
-		id = url.searchParams.get("id");
+		return {
+			id: url.searchParams.get("id")
+		}
 	}
-	return { id };
 }) satisfies LayoutLoad;
