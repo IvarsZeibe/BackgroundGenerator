@@ -15,14 +15,15 @@ use crate::{
     viewmodels::generator_settings::{self, Triangles},
 };
 
-use super::{modify_generator_description, save_generator_description};
+use super::{modify_generator_description, save_generator_description, delete_generator_description};
 
 pub fn get_routes() -> impl Iterator<Item = Route> {
     return routes![
         generate_triangles,
         save_triangles_generator_settings,
         get_triangles_generator_settings,
-        modify_triangles_generator_settings
+        modify_triangles_generator_settings,
+        delete_triangles_generator_settings
     ]
     .into_iter()
     .map(|el| {
@@ -173,4 +174,20 @@ async fn get_triangles_generator_settings(
         name: generator_description.name,
         generator_settings: settings,
     }));
+}
+
+#[post("/<id>/delete")]
+async fn delete_triangles_generator_settings(
+    id: String,
+    conn: Connection<'_, Db>,
+    auth: Auth,
+) -> Result<Accepted<()>, BadRequest<()>> {
+    let db = conn.into_inner();
+    
+    let settings: triangles_generator_settings::ActiveModel = triangles_generator_settings::Entity::find_by_id(id.clone()).one(db).await.unwrap().unwrap().into();
+    settings.delete(db).await.unwrap();
+
+    delete_generator_description(db, id, auth.user_id).await?;
+
+    Ok(Accepted(None))
 }

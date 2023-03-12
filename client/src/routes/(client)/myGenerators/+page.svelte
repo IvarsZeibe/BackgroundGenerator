@@ -11,7 +11,11 @@
     import Button, { Label } from '@smui/button';
     import { onMount } from 'svelte';
     import backendService, { type GeneratorDescription } from '$lib/backend-service';
+    import Dialog, { Actions as DialogActions, Content as DialogContent, Title as DialogTitle } from "@smui/dialog";
+    import { Title } from '@smui/dialog';
 
+	let isDeleteDialogOpen = false;
+	let deleteAction = () => {};
 
 	onMount(async () => {
 		generators = await backendService.getMyGenerators();
@@ -23,7 +27,17 @@
 		goto(`/${generator.generatorTypeCode}/?id=${generator.id}`)
 	}
 	function openDeleteDialog(generator: GeneratorDescription) {
+		isDeleteDialogOpen = true;
+		deleteAction = () => {
+			backendService.deleteGenerator(generator.generatorTypeCode, generator.id);
+			let index = generators.indexOf(generator);
+			if (index > -1) {
+				generators.splice(index, 1);
+				generators = generators;
+			}
+		};
 	}
+	
 </script>
 
 <h1>My generators</h1>
@@ -57,9 +71,24 @@
 		</Card>
 	</div>
 	{/each}
+</div>	
 </div>
-	
-</div>
+
+<Dialog
+	bind:open={isDeleteDialogOpen}
+>
+	<!-- Title cannot contain leading whitespace due to mdc-typography-baseline-top() -->
+	<DialogTitle>Are you sure you want to delete</DialogTitle>
+	<DialogContent>This action is irreversible.</DialogContent>
+	<DialogActions>
+		<Button>
+		<Label>No</Label>
+		</Button>
+		<Button on:click={deleteAction}>
+		<Label>Yes</Label>
+		</Button>
+	</DialogActions>
+</Dialog>
 
 <style>
 	.card-display {

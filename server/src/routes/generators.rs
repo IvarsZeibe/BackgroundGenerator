@@ -66,6 +66,25 @@ async fn modify_generator_description(
     Ok(())
 }
 
+async fn delete_generator_description(
+    db: &DatabaseConnection,
+    id: String,
+    user_id: i32
+) -> Result<(), BadRequest<()>> {
+    let generator_description = generator_description::Entity::find_by_id(id)
+        .one(db)
+        .await
+        .unwrap()
+        .unwrap();
+    if generator_description.user_id != user_id {
+        return Err(BadRequest(None));
+    }
+    let generator_description: generator_description::ActiveModel =
+        generator_description.into();
+    generator_description.delete(db).await.unwrap();
+    Ok(())
+}
+
 #[get("/api/generators")]
 async fn get_generator_types(conn: Connection<'_, Db>) -> Json<Vec<GeneratorType>> {
     let db = conn.into_inner();

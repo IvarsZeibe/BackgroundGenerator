@@ -139,6 +139,12 @@ class BackendService {
 			body: body
 		});
 	}
+
+	async deleteGenerator(type: string, id: string) {
+		return await this.#accessAPI("generator/" + type + "/" + id + "/" + "/delete", {
+			method: "POST"
+		});
+	}
 	
 	async saveGeneratorChanges(type: string, id: string, name: string, description: string, generatorSettings: { [key: string]: any}) {
 		let body: string = JSON.stringify({ name, description, generatorSettings });
