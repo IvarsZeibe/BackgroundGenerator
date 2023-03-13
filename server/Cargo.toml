@@ -16,6 +16,7 @@ image = "0.24.5"
 regex = "1"
 chrono = "*"
 uuid = { version = "*", features = ["v7", "std"] }
+argon2 = "*"
 
 [profile.dev.package."*"]
 opt-level = 2
