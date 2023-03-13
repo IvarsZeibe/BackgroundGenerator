@@ -12,6 +12,7 @@
 		<li><Button href="/signup/">Sign Up</Button></li>
 		{:else if $user.isAuthorised()}
 		<li><Button href="/profile/">Profile</Button></li>
+		<li><Button href="/myGenerators/">My Generators</Button></li>
 			{#if $user.getAuthorisedUserData().isAdmin}
 			<li><Button href="/controlpanel/">Control Panel</Button></li>
 			{/if}
