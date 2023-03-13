@@ -157,6 +157,17 @@ class BackendService {
 		});
 	}
 
+	async editGeneratorDescription(id: string, name: string, description: string) {
+		let body: string = JSON.stringify({ name, description });
+		await this.#accessAPI("generatorDescription/" + id, {
+			method: "POST",
+			headers: {
+				"Content-type": "application/json"
+			},
+			body: body
+		});
+	}
+
 	async getMyGenerators(): Promise<GeneratorDescription[]> {
 		let response = await this.#accessAPI("myGenerators", {
 			method: "GET"

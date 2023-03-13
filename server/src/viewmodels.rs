@@ -1,3 +1,4 @@
+pub mod generator_description;
 pub mod generator_settings;
 pub mod generator_type;
 mod register_data;

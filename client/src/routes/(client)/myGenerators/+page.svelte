@@ -13,9 +13,15 @@
     import backendService, { type GeneratorDescription } from '$lib/backend-service';
     import Dialog, { Actions as DialogActions, Content as DialogContent, Title as DialogTitle } from "@smui/dialog";
     import { Title } from '@smui/dialog';
+    import Textfield from '@smui/textfield';
 
 	let isDeleteDialogOpen = false;
 	let deleteAction = () => {};
+
+	let isEditDialogOpen = false;
+	let editedGeneratorName = "";
+	let editedGeneratorDescription = "";
+	let editAction = () => {};
 
 	onMount(async () => {
 		generators = await backendService.getMyGenerators();
@@ -36,6 +42,17 @@
 				generators = generators;
 			}
 		};
+	}
+	function openEditDialog(generator: GeneratorDescription) {
+		isEditDialogOpen = true;
+		editedGeneratorName = generator.name;
+		editedGeneratorDescription = generator.description;
+		editAction = () => {
+			backendService.editGeneratorDescription(generator.id, editedGeneratorName, editedGeneratorDescription);
+			generator.name = editedGeneratorName;
+			generator.description = editedGeneratorDescription;
+			generators = generators;
+		}
 	}
 	
 </script>
@@ -65,9 +82,14 @@
 					{generator.description}
 				</Content>
 			</PrimaryAction>
-			<Button on:click={() => openDeleteDialog(generator)}>
-				<Label>Delete</Label>
-			</Button>
+			<Actions>
+				<Button on:click={() => openEditDialog(generator)}>
+					<Label>Edit</Label>
+				</Button>
+				<Button on:click={() => openDeleteDialog(generator)}>
+					<Label>Delete</Label>
+				</Button>
+			</Actions>
 		</Card>
 	</div>
 	{/each}
@@ -77,15 +99,36 @@
 <Dialog
 	bind:open={isDeleteDialogOpen}
 >
-	<!-- Title cannot contain leading whitespace due to mdc-typography-baseline-top() -->
 	<DialogTitle>Are you sure you want to delete</DialogTitle>
 	<DialogContent>This action is irreversible.</DialogContent>
 	<DialogActions>
 		<Button>
-		<Label>No</Label>
+			<Label>No</Label>
 		</Button>
 		<Button on:click={deleteAction}>
-		<Label>Yes</Label>
+			<Label>Yes</Label>
+		</Button>
+	</DialogActions>
+</Dialog>
+<Dialog
+	bind:open={isEditDialogOpen}
+>
+	<DialogTitle>Edit generator</DialogTitle>
+	<DialogContent>
+		<Textfield
+			bind:value={editedGeneratorName}
+			label="Name" type="text" />
+		<br>
+		<Textfield
+			bind:value={editedGeneratorDescription}
+			label="Description" type="text" />
+	</DialogContent>
+	<DialogActions>
+		<Button>
+		<Label>Cancel</Label>
+		</Button>
+		<Button on:click={editAction}>
+		<Label>Save</Label>
 		</Button>
 	</DialogActions>
 </Dialog>
