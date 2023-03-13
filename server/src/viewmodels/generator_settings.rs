@@ -22,9 +22,10 @@ pub struct MyGenerator {
     pub generator_type: String,
     #[serde(rename = "generatorTypeCode")]
     pub generator_code: String,
+    pub image: Vec<u8>,
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, Clone)]
 #[serde(crate = "rocket::serde")]
 pub struct Triangles {
     pub width: u32,
@@ -37,14 +38,7 @@ pub struct Triangles {
     pub mode: u32,
 }
 
-#[derive(Deserialize)]
-#[serde(crate = "rocket::serde")]
-pub struct Colorful {
-    #[serde(rename = "levelOfDetail")]
-    pub level_of_detail: u32,
-}
-
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, Clone)]
 #[serde(crate = "rocket::serde")]
 pub struct Circles {
     pub width: u32,
@@ -60,7 +54,7 @@ pub struct Circles {
     pub seed: u32,
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, Clone)]
 #[serde(crate = "rocket::serde")]
 pub struct Chains {
     pub width: u32,
@@ -76,29 +70,3 @@ pub struct Chains {
     pub background_color: String,
     pub seed: u32,
 }
-
-#[derive(Deserialize)]
-#[serde(crate = "rocket::serde")]
-pub struct Fractal {
-    pub width: u32,
-    pub height: u32,
-    pub x: f64,
-    pub y: f64,
-}
-
-// #[derive(Deserialize)]
-// #[serde(crate = "rocket::serde")]
-// pub struct Chains {
-// 	pub width: u32,
-// 	pub height: u32,
-// 	#[serde(rename = "chainCount")]
-// 	pub chain_count: u32,
-// 	#[serde(rename = "circleRadius")]
-// 	pub circle_radius: u32,
-// 	pub spacing: f32,
-// 	#[serde(rename = "backgroundColor")]
-// 	pub background_color: [u8; 3],
-// 	pub color1: [u8; 3],
-// 	pub color2: [u8; 3],
-// 	pub seed: u64
-// }

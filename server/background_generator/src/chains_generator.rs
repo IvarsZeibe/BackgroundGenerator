@@ -1,4 +1,4 @@
-use image::{ImageBuffer, Rgb};
+use image::{DynamicImage, ImageBuffer, Rgb};
 use imageproc::{drawing, pixelops::interpolate};
 use noise::{NoiseFn, Perlin};
 use rand::{Rng, SeedableRng};
@@ -13,7 +13,7 @@ pub fn generate(
     color1: [u8; 3],
     color2: [u8; 3],
     seed: u64,
-) -> ImageBuffer<Rgb<u8>, Vec<u8>> {
+) -> DynamicImage {
     let circle_radius = circle_radius as i32;
     let step = circle_radius as f32 * 2. + spacing;
 
@@ -75,7 +75,7 @@ pub fn generate(
         points.append(&mut new_points);
     }
 
-    image
+    image.into()
 }
 fn has_point_near(point: &(f32, f32), points: &Vec<(f32, f32)>, distance: f32) -> bool {
     for p in points {

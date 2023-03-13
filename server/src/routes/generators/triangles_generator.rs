@@ -1,4 +1,5 @@
 use background_generator::triangles_generator::TriangleGeneratorMode;
+use image::DynamicImage;
 use rocket::{
     response::status::{Accepted, BadRequest, NotFound},
     serde::json::Json,
@@ -34,10 +35,7 @@ pub fn get_routes() -> impl Iterator<Item = Route> {
     });
 }
 
-#[post("/", data = "<settings>")]
-async fn generate_triangles(
-    settings: Json<generator_settings::Triangles>,
-) -> Result<PngImage, BadRequest<()>> {
+fn generate(settings: generator_settings::Triangles) -> Result<DynamicImage, BadRequest<()>> {
     let generator_settings::Triangles {
         width,
         height,
@@ -46,7 +44,7 @@ async fn generate_triangles(
         color2,
         seed,
         mode,
-    } = settings.0;
+    } = settings;
 
     let mode = match mode {
         0 => TriangleGeneratorMode::Quad,
@@ -64,8 +62,14 @@ async fn generate_triangles(
         color2,
         seed as u64,
         mode,
-    )
-    .into())
+    ))
+}
+
+#[post("/", data = "<settings>")]
+async fn generate_triangles(
+    settings: Json<generator_settings::Triangles>,
+) -> Result<PngImage, BadRequest<()>> {
+    Ok(PngImage::from(generate(settings.0)?))
 }
 
 #[post("/save", data = "<settings>")]
@@ -81,7 +85,9 @@ async fn save_triangles_generator_settings(
         generator_settings,
     } = settings.into_inner();
 
-    let Ok(generator_description) = save_generator_description(db, auth.user_id, name, description, 0).await else { return Err(BadRequest(None)); };
+    let image = generate(generator_settings.clone())?;
+
+    let Ok(generator_description) = save_generator_description(db, auth.user_id, name, description, image, 0).await else { return Err(BadRequest(None)); };
 
     let settings = triangles_generator_settings::ActiveModel {
         id: Set(generator_description.id.clone()),
@@ -119,7 +125,9 @@ async fn modify_triangles_generator_settings(
         generator_settings,
     } = settings.into_inner();
 
-    modify_generator_description(db, id.clone(), auth.user_id, name, description).await?;
+    let image = generate(generator_settings.clone())?;
+
+    modify_generator_description(db, id.clone(), auth.user_id, name, description, image).await?;
 
     let mut settings: triangles_generator_settings::ActiveModel =
         triangles_generator_settings::Entity::find_by_id(id)

@@ -1,4 +1,5 @@
 use chrono::Local;
+use image::DynamicImage;
 use rocket::{
     response::status::{Accepted, BadRequest, NotFound},
     serde::json::Json,
@@ -34,6 +35,7 @@ async fn save_generator_description(
     user_id: i32,
     name: String,
     description: String,
+    image: DynamicImage,
     generator_type: i32,
 ) -> Result<generator_description::Model, DbErr> {
     let generator = generator_description::ActiveModel {
@@ -45,7 +47,10 @@ async fn save_generator_description(
         generator_type: Set(generator_type),
         ..Default::default()
     };
-    Ok(generator.insert(db).await?)
+    let generator = generator.insert(db).await?;
+    let image = image.thumbnail(640, 360);
+    image.save(generator.id.clone() + ".jpg").unwrap();
+    Ok(generator)
 }
 
 async fn modify_generator_description(
@@ -54,8 +59,9 @@ async fn modify_generator_description(
     user_id: i32,
     name: String,
     description: String,
+    image: DynamicImage,
 ) -> Result<(), BadRequest<()>> {
-    let generator_description = generator_description::Entity::find_by_id(id)
+    let generator_description = generator_description::Entity::find_by_id(id.clone())
         .one(db)
         .await
         .unwrap()
@@ -68,6 +74,10 @@ async fn modify_generator_description(
     generator_description.name = Set(name);
     generator_description.description = Set(description);
     generator_description.save(db).await.unwrap();
+
+    let image = image.thumbnail(640, 360);
+    image.save(id + ".jpg").unwrap();
+
     Ok(())
 }
 

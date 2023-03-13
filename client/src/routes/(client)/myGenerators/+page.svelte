@@ -77,7 +77,11 @@
 						Type: {generator.generatorType}
 					</h3>
 				</div>
-				<Media class="card-media-16x9" aspectRatio="16x9" />
+				<Media class="card-media-16x9" aspectRatio="16x9">
+					<MediaContent>
+					<img style="width: 100%;" src={"data:image/jpeg;base64," + generator.image} alt="Thumbnail"/>
+					</MediaContent>
+				</Media>
 				<Content class="mdc-typography--body2">
 					{generator.description}
 				</Content>

@@ -1,6 +1,7 @@
 use rocket::{futures, response::status, serde::json::Json, Route};
 use sea_orm::*;
 use sea_orm_rocket::Connection;
+use std::fs;
 
 use crate::{
     auth::Auth,
@@ -124,6 +125,8 @@ async fn get_my_generators(conn: Connection<'_, Db>, auth: Auth) -> Json<Vec<MyG
             .await
             .unwrap()
             .unwrap();
+
+        let image = fs::read(g.id.clone() + ".jpg").unwrap_or(vec![]);
         MyGenerator {
             id: g.id,
             name: g.name,
@@ -131,6 +134,7 @@ async fn get_my_generators(conn: Connection<'_, Db>, auth: Auth) -> Json<Vec<MyG
             date_created: g.date_created,
             generator_type: generator_type.name,
             generator_code: generator_type.code,
+            image: image,
         }
     }
 

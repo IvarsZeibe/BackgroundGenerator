@@ -1,3 +1,4 @@
+use image::DynamicImage;
 use rocket::{
     response::status::{Accepted, BadRequest, NotFound},
     serde::json::Json,
@@ -33,10 +34,7 @@ pub fn get_routes() -> impl Iterator<Item = Route> {
     });
 }
 
-#[post("/", data = "<settings>")]
-async fn generate_circles(
-    settings: Json<generator_settings::Circles>,
-) -> Result<PngImage, BadRequest<()>> {
+fn generate(settings: generator_settings::Circles) -> Result<DynamicImage, BadRequest<()>> {
     let generator_settings::Circles {
         background_color,
         circle_count,
@@ -46,7 +44,7 @@ async fn generate_circles(
         max_circle_size,
         seed,
         width,
-    } = settings.0;
+    } = settings;
 
     let Ok(color1) = background_generator::hex_to_u8_color(color1) else { return Err(BadRequest(None)) };
     let Ok(color2) = background_generator::hex_to_u8_color(color2) else { return Err(BadRequest(None)) };
@@ -61,8 +59,14 @@ async fn generate_circles(
         color2,
         background_color,
         seed as u64,
-    )
-    .into())
+    ))
+}
+
+#[post("/", data = "<settings>")]
+async fn generate_circles(
+    settings: Json<generator_settings::Circles>,
+) -> Result<PngImage, BadRequest<()>> {
+    Ok(PngImage::from(generate(settings.0)?))
 }
 
 #[post("/save", data = "<settings>")]
@@ -78,7 +82,9 @@ async fn save_circles_generator_settings(
         generator_settings,
     } = settings.into_inner();
 
-    let Ok(generator_description) = save_generator_description(db, auth.user_id, name, description, 1).await else { return Err(BadRequest(None)); };
+    let image = generate(generator_settings.clone())?;
+
+    let Ok(generator_description) = save_generator_description(db, auth.user_id, name, description, image, 1).await else { return Err(BadRequest(None)); };
 
     let settings = circles_generator_settings::ActiveModel {
         id: Set(generator_description.id.clone()),
@@ -114,7 +120,9 @@ async fn modify_circles_generator_settings(
         generator_settings,
     } = settings.into_inner();
 
-    modify_generator_description(db, id.clone(), auth.user_id, name, description).await?;
+    let image = generate(generator_settings.clone())?;
+
+    modify_generator_description(db, id.clone(), auth.user_id, name, description, image).await?;
 
     let mut settings: circles_generator_settings::ActiveModel =
         circles_generator_settings::Entity::find_by_id(id)

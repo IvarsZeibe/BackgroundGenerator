@@ -1,4 +1,4 @@
-use image::{ImageBuffer, Rgb};
+use image::{DynamicImage, ImageBuffer, Rgb};
 use imageproc::{drawing, pixelops::interpolate};
 use rand::{Rng, SeedableRng};
 use std::f32::consts::SQRT_2;
@@ -12,7 +12,7 @@ pub fn generate(
     color2: [u8; 3],
     background_color: [u8; 3],
     seed: u64,
-) -> ImageBuffer<Rgb<u8>, Vec<u8>> {
+) -> DynamicImage {
     let color1 = Rgb(color1);
     let color2 = Rgb(color2);
     let background_color = Rgb(background_color);
@@ -49,5 +49,5 @@ pub fn generate(
         drawing::draw_filled_circle_mut(&mut image, center, radius, color.into());
     }
 
-    image
+    image.into()
 }

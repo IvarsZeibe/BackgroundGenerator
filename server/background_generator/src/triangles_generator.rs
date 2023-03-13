@@ -1,4 +1,4 @@
-use image::{ImageBuffer, Rgb};
+use image::{DynamicImage, ImageBuffer, Rgb};
 use imageproc::{drawing, pixelops::interpolate, point::Point};
 use rand::{Rng, SeedableRng};
 
@@ -16,7 +16,7 @@ pub fn generate(
     color2: [u8; 3],
     seed: u64,
     mode: TriangleGeneratorMode,
-) -> ImageBuffer<Rgb<u8>, Vec<u8>> {
+) -> DynamicImage {
     let mut image = ImageBuffer::from_pixel(width, height, Rgb([255, 255, 255]));
     let edge_count = edge_count;
     let point_count = edge_count + 1;
@@ -61,5 +61,5 @@ pub fn generate(
             drawing::draw_polygon_mut(&mut image, &triangle_points, color);
         }
     }
-    image
+    image.into()
 }
