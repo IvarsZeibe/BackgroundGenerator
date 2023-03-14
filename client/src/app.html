@@ -36,6 +36,18 @@
 			id="theme"
 			media="screen"
 		/>
+		
+		<script>
+			let preferredTheme = localStorage.getItem("previousTheme");
+			if (preferredTheme) {
+				let themeLink = document.head.querySelector('#theme');
+				if (preferredTheme == "light") {
+					themeLink.href = "/smui.css"
+				} else if (preferredTheme == "dark") {
+					themeLink.href = "/smui-dark.css"
+				}
+			}
+		</script>
 
 		%sveltekit.head%
 	</head>

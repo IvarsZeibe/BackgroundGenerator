@@ -1,32 +1,39 @@
 <script lang="ts">
     import { browser } from '$app/environment';
     import backendService from '$lib/backend-service';
-    import Button from '@smui/button/src/Button.svelte';
     import { onMount } from 'svelte';
     import { ThemeMode, themeMode } from '../stores';
 	import Navbar from './Navbar.svelte';
+	import TopAppBar, { AutoAdjust } from '@smui/top-app-bar';
 	
-	let devicePreferredTheme: string | null;
+	let isLightThemeDevicePreferred: boolean | null;
 	let themeLink: HTMLLinkElement | null;
 	let isLightTheme: boolean | null;
 
+	let topAppBar: TopAppBar;
+
 	if (browser) {
 		themeLink = document.head.querySelector<HTMLLinkElement>('#theme');
-		devicePreferredTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? "dark" : "light";
-		window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
-			devicePreferredTheme = event.matches ? "dark" : "light";
+		isLightThemeDevicePreferred = window.matchMedia('(prefers-color-scheme: light)').matches;
+		window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', event => {
+			isLightThemeDevicePreferred = event.matches;
 		});
+		if (themeLink?.href) {
+			isLightTheme = themeLink?.href == location.origin + "/smui.css";
+		} else {
+			isLightTheme = isLightThemeDevicePreferred;
+		}
 	}
 
 	onMount(() => {
 		backendService.setProfile();
 	});
 
-	$: if (devicePreferredTheme) {
+	$: if (isLightThemeDevicePreferred) {
 		switch($themeMode) {
 			case ThemeMode.UseDeviceTheme:
 				localStorage.removeItem("previousTheme");
-				isLightTheme = devicePreferredTheme == "light";
+				isLightTheme = isLightThemeDevicePreferred;
 				break;
 			case ThemeMode.Dark:
 				isLightTheme = false;
@@ -55,35 +62,24 @@
 <svelte:head>
 	<title>Background generator</title>
 	<meta name="description" content="Background generator" />
-	
-	<script>
-		let preferredTheme = localStorage.getItem("previousTheme");
-		if (preferredTheme) {
-			let themeLink = document.head.querySelector('#theme');
-			if (preferredTheme == "light") {
-				themeLink.href = "/smui.css"
-			} else if (preferredTheme == "dark") {
-				themeLink.href = "/smui-dark.css"
-			}
-		}
-	</script>
 </svelte:head>
 
-<Button on:click={() => {backendService.setUserPreferredTheme(ThemeMode.Light)}}>Light</Button>
-<Button on:click={() => {backendService.setUserPreferredTheme(ThemeMode.Dark)}}>Dark</Button>
-<Button on:click={() => {backendService.setUserPreferredTheme(ThemeMode.UseDeviceTheme)}}>Use device theme</Button>
 <div class="app">
-	<Navbar />
+	<Navbar bind:topAppBar bind:isLightTheme />
 	<main>
-		<slot />
-	</main>
-
+		<AutoAdjust {topAppBar}>
+			<slot />
+		</AutoAdjust> 
+	</main>	
 	<footer>
 		<p>visit <a href="https://kit.svelte.dev">kit.svelte.dev</a> to learn SvelteKit</p>
 	</footer>
 </div>
 
 <style>
+	:global(body) {
+		margin: 0;
+	}
 	.app {
 		display: flex;
 		flex-direction: column;
