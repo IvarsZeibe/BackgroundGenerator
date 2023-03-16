@@ -28,5 +28,5 @@ target
 *.sln
 *.sw?
 
-# Test database
-*.sqlite
+# Test data
+server/data

@@ -11,7 +11,7 @@
 	let isLightTheme: boolean | null;
 
 	let topAppBar: TopAppBar;
-
+	
 	if (browser) {
 		themeLink = document.head.querySelector<HTMLLinkElement>('#theme');
 		isLightThemeDevicePreferred = window.matchMedia('(prefers-color-scheme: light)').matches;
@@ -66,11 +66,9 @@
 
 <div class="app">
 	<Navbar bind:topAppBar bind:isLightTheme />
-	<main>
-		<AutoAdjust {topAppBar}>
-			<slot />
-		</AutoAdjust> 
-	</main>	
+	<AutoAdjust id="main-content" {topAppBar}>
+		<slot />
+	</AutoAdjust>
 	<footer>
 		<p>visit <a href="https://kit.svelte.dev">kit.svelte.dev</a> to learn SvelteKit</p>
 	</footer>
@@ -86,11 +84,11 @@
 		min-height: 100vh;
 	}
 
-	main {
+	* :global(#main-content) {
 		flex: 1;
 		display: flex;
 		flex-direction: column;
-		padding: 1rem;
+		/* padding: 1rem; */
 		width: 100%;
 		max-width: 64rem;
 		margin: 0 auto;

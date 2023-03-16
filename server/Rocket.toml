@@ -1,2 +1,2 @@
 [default.databases.mydb]
-url = "sqlite://database.sqlite?mode=rwc"
+url = "sqlite://data/database.sqlite?mode=rwc"

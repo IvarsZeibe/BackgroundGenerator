@@ -126,7 +126,7 @@ async fn get_my_generators(conn: Connection<'_, Db>, auth: Auth) -> Json<Vec<MyG
             .unwrap()
             .unwrap();
 
-        let image = fs::read(g.id.clone() + ".jpg").unwrap_or(vec![]);
+        let image = fs::read(format!("data/{}.jpg", g.id.clone())).unwrap_or(vec![]);
         MyGenerator {
             id: g.id,
             name: g.name,

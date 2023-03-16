@@ -143,21 +143,14 @@
 		flex-wrap: wrap;
 		justify-content: stretch;
 		justify-content: center;
-		background-color: var(--mdc-theme-background, #f8f8f8);
-		border: 1px solid
-		var(--mdc-theme-text-hint-on-background, rgba(0, 0, 0, 0.1));
 	}
 	* :global(.card-container) {
 		display: inline-flex;
-		/* justify-content: center; */
 		align-items: center;
 		min-height: 200px;
 		width: 380px;
 		max-width: 100%;
 		overflow-x: auto;
-		/* background-color: var(--mdc-theme-background, #f8f8f8); */
-		/* border: 1px solid */
-		/* var(--mdc-theme-text-hint-on-background, rgba(0, 0, 0, 0.1)); */
 		padding: 20px;
 		margin-right: 20px;
 		margin-bottom: 20px;
