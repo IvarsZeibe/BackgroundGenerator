@@ -10,14 +10,12 @@ pub fn generate(
     max_size: u32,
     color1: [u8; 3],
     color2: [u8; 3],
-    background_color: [u8; 3],
     seed: u64,
 ) -> DynamicImage {
     let color1 = Rgb(color1);
     let color2 = Rgb(color2);
-    let background_color = Rgb(background_color);
 
-    let mut image = ImageBuffer::from_pixel(width, height, background_color);
+    let mut image = ImageBuffer::from_pixel(width, height, Rgb([255, 255, 255]));
 
     let mut rng = rand_chacha::ChaCha8Rng::seed_from_u64(seed);
     let gap = max_size as f32 * SQRT_2;

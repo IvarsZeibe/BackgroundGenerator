@@ -1,28 +1,23 @@
 <script lang="ts">
-    import { page } from "$app/stores";
 	import backendService from "$lib/backend-service";
     import Color from "$lib/color";
-    import { onMount } from "svelte";
-    import type { LayoutData } from "../$types";
+    import { Label } from "@smui/common";
+    import Select, { Option } from "@smui/select";
+    import Switch from "@smui/switch";
+    import Textfield from "@smui/textfield";
     import { context } from "../+layout.svelte";
-
-	export let data: LayoutData;
-	
-	console.log("child");
 
 	let generator = $context.generatorSettings;
 
 	generator.width = 1920;
 	generator.height = 1080;
 	generator.edgeCount = 15;
-	console.log($context.isPreloaded);
-	// generator.color1: string;
+	generator.seed = 0;
 	let isColor1Random = !$context.isPreloaded;
-	// generator.color2: string;
 	let isColor2Random = !$context.isPreloaded;
-	// generator.seed: number;
 	let isSeedRandom = !$context.isPreloaded;
-	generator.mode = 0;
+	let modeAsString = generator.mode ? generator.mode.toString() : "1";
+	$: generator.mode = parseInt(modeAsString);
 
 	$context.generatorTypeName = "triangles";
 
@@ -47,30 +42,31 @@
 	}
 </script>
 
-<label for="width">Width</label>
-<input type="number" name="width" placeholder="Width" bind:value={generator.width} /><br />
-<label for="height">Height</label>
-<input type="number" name="height" placeholder="Height" bind:value={generator.height} /><br />
-<label for="edge_count">Edge count</label>
-<input type="number" name="edge_count" placeholder="Edge_count" bind:value={generator.edgeCount} /><br />
+<Textfield type="number" label="Width" bind:value={generator.width} />
+<Textfield type="number" label="Height" bind:value={generator.height} />
+<Textfield type="number" label="Edge count" bind:value={generator.edgeCount} />
 
-<label for="is_color1_random">Is random</label>
-<input type="checkbox" name="is_color1_random" bind:checked={isColor1Random} />
-<label for="color1">Color</label>
-<input type="color" name="color1" placeholder="Color" bind:value={generator.color1} disabled={isColor1Random} /><br />
+<Select label="Mode" bind:value={modeAsString}>
+	<Option value=1>Quad</Option>
+	<Option value=2>Diagonal</Option>
+</Select>
 
-<label for="is_color2_random">Is random</label>
-<input type="checkbox" name="is_color2_random" bind:checked={isColor2Random} />
-<label for="color2">Color</label>
-<input type="color" name="color2" placeholder="Color" bind:value={generator.color2}  disabled={isColor2Random} /><br />
+<div class="input-group">
+	<Label class="color-label">Accent Color 1</Label>
+	<input bind:value={generator.color1} type="color" disabled={isColor1Random} />
+	<Switch bind:checked={isColor1Random}></Switch>
+	<Label class="color-label">Is Random</Label>
+</div>
 
-<label for="is_seed_random">Is seed random</label>
-<input type="checkbox" name="is_seed_random" bind:checked={isSeedRandom} />
-<label for="seed">Seed</label>
-<input type="number" name="seed" placeholder="Seed" bind:value={generator.seed} disabled={isSeedRandom} /><br />
+<div class="input-group">
+	<Label class="color-label">Accent Color 2</Label>
+	<input bind:value={generator.color2} type="color" disabled={isColor2Random} />
+	<Switch bind:checked={isColor2Random}></Switch>
+	<Label class="color-label">Is Random</Label>
+</div>
 
-<label for="mode">Choose a mode:</label>
-<select name="mode" bind:value={generator.mode}>
-	<option value={0}>Quad</option>
-	<option value={1}>Diagonal</option>
-</select>
+<Textfield type="number" label="Seed" bind:value={generator.seed} disabled={isSeedRandom} />
+<div>
+	<Switch bind:checked={isSeedRandom}></Switch>
+	<Label class="color-label">Is Random</Label>
+</div>

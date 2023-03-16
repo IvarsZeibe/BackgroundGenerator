@@ -47,7 +47,7 @@ fn generate(settings: generator_settings::Triangles) -> Result<DynamicImage, Bad
     } = settings;
 
     let mode = match mode {
-        0 => TriangleGeneratorMode::Quad,
+        1 => TriangleGeneratorMode::Quad,
         _ => TriangleGeneratorMode::Diagonal,
     };
 

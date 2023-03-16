@@ -134,7 +134,6 @@
 	function isAnyDialogDataInvalid(): boolean {
 		return Object.values(dialogData)
 			.some((value) => {
-				console.log(value.isInvalid);
 				return value.isInvalid
 			});
 	}

@@ -84,13 +84,17 @@
 		min-height: 100vh;
 	}
 
+	
+	:global(.max-width) {
+		max-width: 64rem;
+	}
+
 	* :global(#main-content) {
 		flex: 1;
 		display: flex;
 		flex-direction: column;
-		/* padding: 1rem; */
+    	align-items: center;
 		width: 100%;
-		max-width: 64rem;
 		margin: 0 auto;
 		box-sizing: border-box;
 	}

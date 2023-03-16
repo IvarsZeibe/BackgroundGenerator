@@ -11,5 +11,7 @@
 {#if !$user.isAuthorised()}
 <p>loading..</p>
 {:else}
-<slot />
+<div class="max-width">
+	<slot />
+</div>
 {/if}

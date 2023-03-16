@@ -9,9 +9,9 @@ pub fn generate(
     chain_count: u32,
     circle_radius: u32,
     spacing: f32,
-    background_color: [u8; 3],
     color1: [u8; 3],
     color2: [u8; 3],
+    background_color: [u8; 3],
     seed: u64,
 ) -> DynamicImage {
     let circle_radius = circle_radius as i32;

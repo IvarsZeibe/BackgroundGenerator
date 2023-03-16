@@ -3,7 +3,7 @@ use image::DynamicImage;
 use rocket::{
     response::status::{Accepted, BadRequest, NotFound},
     serde::json::Json,
-    Route,
+    Route
 };
 use sea_orm::*;
 use sea_orm_rocket::Connection;
@@ -49,7 +49,7 @@ async fn save_generator_description(
     };
     let generator = generator.insert(db).await?;
     let image = image.thumbnail(640, 360);
-    image.save(generator.id.clone() + ".jpg").unwrap();
+    image.save(format!("data/{}.jpg", generator.id.clone())).unwrap();
     Ok(generator)
 }
 
@@ -76,7 +76,7 @@ async fn modify_generator_description(
     generator_description.save(db).await.unwrap();
 
     let image = image.thumbnail(640, 360);
-    image.save(id + ".jpg").unwrap();
+    image.save(format!("data/{id}.jpg")).unwrap();
 
     Ok(())
 }
@@ -86,7 +86,7 @@ async fn delete_generator_description(
     id: String,
     user_id: i32,
 ) -> Result<(), BadRequest<()>> {
-    let generator_description = generator_description::Entity::find_by_id(id)
+    let generator_description = generator_description::Entity::find_by_id(id.clone())
         .one(db)
         .await
         .unwrap()
@@ -96,6 +96,7 @@ async fn delete_generator_description(
     }
     let generator_description: generator_description::ActiveModel = generator_description.into();
     generator_description.delete(db).await.unwrap();
+    std::fs::remove_file(format!("data/{}.jpg", id)).unwrap();
     Ok(())
 }
 

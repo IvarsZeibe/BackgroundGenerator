@@ -12,7 +12,7 @@
 	<title>Background generator</title>
 </svelte:head>
 
-<div>
+<div class="max-width">
 	<div class="hero">
 		<div class="title">
 			<Logo outline height="80%"/>
@@ -22,16 +22,18 @@
 			Transform your website with stunning backgrounds - create unique designs in just a few clicks with our generator.
 		</p>
 	</div>
-	{#each data.generators as generator}
-		<Card class="card" >
-			<PrimaryAction on:click={() => {goto(`/${generator.code}`)}}>
-				<Label class="generator-name">{generator.name}</Label>
-				<Media
-					style="background-image: url('{generator.code}.png'); background-size: cover;"
-					aspectRatio="16x9" />
-			</PrimaryAction>
-		</Card>
-	{/each}
+	<div>
+		{#each data.generators as generator}
+			<Card class="card" >
+				<PrimaryAction on:click={() => {goto(`/${generator.code}`)}}>
+					<Label class="generator-name">{generator.name}</Label>
+					<Media
+						style="background-image: url('{generator.code}.png'); background-size: cover;"
+						aspectRatio="16x9" />
+				</PrimaryAction>
+			</Card>
+		{/each}
+	</div>
 </div>
 
 <style>

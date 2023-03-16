@@ -11,7 +11,6 @@ pub struct Model {
     pub max_circle_size: u32,
     pub color1: String,
     pub color2: String,
-    pub background_color: String,
     pub seed: u32,
 }
 

@@ -36,7 +36,6 @@ pub fn get_routes() -> impl Iterator<Item = Route> {
 
 fn generate(settings: generator_settings::Circles) -> Result<DynamicImage, BadRequest<()>> {
     let generator_settings::Circles {
-        background_color,
         circle_count,
         color1,
         color2,
@@ -48,7 +47,6 @@ fn generate(settings: generator_settings::Circles) -> Result<DynamicImage, BadRe
 
     let Ok(color1) = background_generator::hex_to_u8_color(color1) else { return Err(BadRequest(None)) };
     let Ok(color2) = background_generator::hex_to_u8_color(color2) else { return Err(BadRequest(None)) };
-    let Ok(background_color) = background_generator::hex_to_u8_color(background_color) else { return Err(BadRequest(None)) };
 
     Ok(background_generator::circles_generator::generate(
         width,
@@ -57,7 +55,6 @@ fn generate(settings: generator_settings::Circles) -> Result<DynamicImage, BadRe
         max_circle_size,
         color1,
         color2,
-        background_color,
         seed as u64,
     ))
 }
@@ -94,7 +91,6 @@ async fn save_circles_generator_settings(
         max_circle_size: Set(generator_settings.max_circle_size),
         color1: Set(generator_settings.color1),
         color2: Set(generator_settings.color2),
-        background_color: Set(generator_settings.background_color),
         seed: Set(generator_settings.seed),
     };
 
@@ -137,7 +133,6 @@ async fn modify_circles_generator_settings(
     settings.max_circle_size = Set(generator_settings.circle_count);
     settings.color1 = Set(generator_settings.color1);
     settings.color2 = Set(generator_settings.color2);
-    settings.background_color = Set(generator_settings.background_color);
     settings.seed = Set(generator_settings.seed);
     settings.save(db).await.unwrap();
 
@@ -170,7 +165,6 @@ async fn get_circles_generator_settings(
         circle_count: settings.circle_count,
         max_circle_size: settings.max_circle_size,
         height: settings.height,
-        background_color: settings.background_color,
         seed: settings.seed,
         width: settings.width,
     };

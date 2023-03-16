@@ -49,8 +49,6 @@ pub struct Circles {
     pub max_circle_size: u32,
     pub color1: String,
     pub color2: String,
-    #[serde(rename = "backgroundColor")]
-    pub background_color: String,
     pub seed: u32,
 }
 

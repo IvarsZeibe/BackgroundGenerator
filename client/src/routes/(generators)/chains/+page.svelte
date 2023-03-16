@@ -1,11 +1,10 @@
 <script lang="ts">
 	import backendService from "$lib/backend-service";
     import Color from "$lib/color";
-    import { onMount } from "svelte";
-    import type { LayoutData } from "../$types";
+    import { Label } from "@smui/common";
+    import Switch from "@smui/switch";
+    import Textfield from "@smui/textfield";
     import { context } from "../+layout.svelte";
-
-	export let data: LayoutData;
 	
 	let generator = $context.generatorSettings;
 
@@ -14,9 +13,10 @@
 	generator.chainCount = 1000;
 	generator.circleRadius = 5;
 	generator.spacing = 5;
+	generator.seed = 0;
 	let isColor1Random = !$context.isPreloaded;
 	let isColor2Random = !$context.isPreloaded;
-	generator.backgroundColor = "#FFFFFF";
+	let isBackgroundColorRandom = !$context.isPreloaded;
 	let isSeedRandom = !$context.isPreloaded;
 
 	$context.generatorTypeName = "chains";
@@ -30,6 +30,9 @@
 		if (isColor2Random || !generator.color2) {
 			generator.color2 = Color.getRandomHex();
 		}
+		if (isBackgroundColorRandom || !generator.backgroundColor) {
+			generator.backgroundColor = Color.getRandomHex();
+		}
 		if (isSeedRandom || !generator.seed) {
 			generator.seed = Math.floor(Math.random() * Math.pow(2, 32));
 		}
@@ -42,34 +45,35 @@
 	}
 </script>
 
-<label for="width">Width</label>
-<input type="number" name="width" placeholder="Width" bind:value={generator.width} /><br />
-<label for="height">Height</label>
-<input type="number" name="height" placeholder="Height" bind:value={generator.height} /><br />
+<Textfield type="number" label="Width" bind:value={generator.width} />
+<Textfield type="number" label="Height" bind:value={generator.height} />
+<Textfield type="number" label="Chain count" bind:value={generator.chainCount} />
+<Textfield type="number" label="Cricle radius" bind:value={generator.circleRadius} />
+<Textfield type="number" label="Spacing" bind:value={generator.spacing} />
 
-<label for="chainCount">Chain count</label>
-<input type="number" name="chainCount" bind:value={generator.chainCount} /><br />
+<div class="input-group">
+	<Label class="color-label">Accent Color 1</Label>
+	<input bind:value={generator.color1} type="color" disabled={isColor1Random} />
+	<Switch bind:checked={isColor1Random}></Switch>
+	<Label class="color-label">Is Random</Label>
+</div>
 
-<label for="circleRadius">Circle radius</label>
-<input type="number" name="circleRadius" bind:value={generator.circleRadius} /><br />
+<div class="input-group">
+	<Label class="color-label">Accent Color 2</Label>
+	<input bind:value={generator.color2} type="color" disabled={isColor2Random} />
+	<Switch bind:checked={isColor2Random}></Switch>
+	<Label class="color-label">Is Random</Label>
+</div>
 
-<label for="spacing">Spacing</label>
-<input type="number" name="spacing" bind:value={generator.spacing} /><br />
+<div class="input-group">
+	<Label class="color-label">Background Color</Label>
+	<input bind:value={generator.backgroundColor} type="color" disabled={isBackgroundColorRandom} />
+	<Switch bind:checked={isBackgroundColorRandom}></Switch>
+	<Label class="color-label">Is Random</Label>
+</div>
 
-<label for="is_color1_random">Is random</label>
-<input type="checkbox" name="is_color1_random" bind:checked={isColor1Random} />
-<label for="color1">Color</label>
-<input type="color" name="color1" placeholder="Color" bind:value={generator.color1} disabled={isColor1Random} /><br />
-
-<label for="is_color2_random">Is random</label>
-<input type="checkbox" name="is_color2_random" bind:checked={isColor2Random} />
-<label for="color2">Color</label>
-<input type="color" name="color2" placeholder="Color" bind:value={generator.color2} disabled={isColor2Random} /><br />
-
-<label for="background">Color</label>
-<input type="color" name="background" placeholder="Color" bind:value={generator.backgroundColor} /><br />
-
-<label for="is_seed_random">Is seed random</label>
-<input type="checkbox" name="is_seed_random" bind:checked={isSeedRandom} />
-<label for="seed">Seed</label>
-<input type="number" name="seed" placeholder="Seed" bind:value={generator.seed} disabled={isSeedRandom} /><br />
+<Textfield type="number" bind:value={generator.seed} disabled={isSeedRandom} />
+<div>
+	<Switch bind:checked={isSeedRandom}></Switch>
+	<Label class="color-label">Is Random</Label>
+</div>

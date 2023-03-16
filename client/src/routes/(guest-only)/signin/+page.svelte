@@ -7,8 +7,6 @@
 	async function handleSubmit(e: { preventDefault: () => void; }) {
 		e.preventDefault();
 		let { isOk, message } = await backendService.login(email, password);
-		console.log("Is ok: " + isOk);
-		console.log("Message: " + message);
 	}
 </script>
 

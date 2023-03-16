@@ -82,18 +82,28 @@
 </script>
 
 <h1>{toSentanceCase($context.generatorTypeName)} generator</h1>
-<button on:click={$context.generate}>Generate</button>
 
-<slot />
-<a href={$context.src} download="image">Download</a>
-<img src={$context.src} alt="Nothing"/>
-{#if $context.src != ""}
-	{#if $user.isAuthorised()}
-	<Button on:click={openSaveDialog}>Save</Button>
-	{:else if $user.isGuest()}
-	<Button href="/signin/">Sign in to save</Button>
-	{/if}
-{/if}
+<div class="container">
+	<div class="left-div">
+		<div class="left-content">
+			<Button on:click={$context.generate}>Generate</Button>
+			<slot />
+		</div>
+	</div>
+	<div class="right-div">
+		<img src={$context.src} alt="Nothing"/>
+		<div class="image-actions">
+			{#if $context.src != ""}
+				{#if $user.isAuthorised()}
+				<Button on:click={openSaveDialog}>Save</Button>
+				{:else if $user.isGuest()}
+				<Button href="/signin/">Sign in to save</Button>
+				{/if}
+				<Button href={$context.src} download="image">Download</Button>
+			{/if}
+		</div>
+	</div>
+  </div>
 
 <Dialog
 	bind:open={isDialogOpen}
@@ -143,3 +153,73 @@
 		</Button>
 	</Actions>
 </Dialog>
+
+<style>
+	h1 {
+		margin-left: 350px;
+		text-align: center;
+	}
+	.container {
+		width: 100%;
+		max-height: 70vh;
+		display: flex;
+		flex-direction: row;
+		flex-grow: 1;
+	}
+
+	.left-div {
+		overflow-y: auto;
+		width: 300px;
+		padding: 20px;
+	}
+
+	.left-content {
+		display: flex;
+		flex-direction: column;
+	}
+
+	.right-div {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		padding: 20px;
+		box-sizing: border-box;
+	}
+
+	.right-div img {
+		max-width: 100%;
+		max-height: 100%;
+		object-fit: contain;
+	}
+
+	.image-actions {
+		margin-top: auto;
+		display: flex;
+		flex-direction: row;
+		justify-content: center;
+		margin-top: 20px;
+		padding: 10px 20px;
+		width: 100%;
+	}
+	
+	* :global(input[type="color"]) {
+		width: 100%;
+		background: none;
+		border: none;
+		padding: 0;
+	}
+	* :global(input[type="color"]:disabled) {
+		filter: blur(5px);
+	}
+	* :global(.color-label) {
+		font-family: Roboto, sans-serif;
+		font-weight: 400;
+		margin-left: 2px;
+		font-size: 16px;
+	}
+	* :global(.input-group) {
+		border-bottom: 1px gray solid;
+		margin: 30px 0px;
+	}
+</style>
