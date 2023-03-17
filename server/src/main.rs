@@ -26,12 +26,12 @@ const BUILD_PATH: &str = relative!("../client/build");
 
 #[launch]
 async fn rocket() -> _ {
-    rocket::build()
-        .attach(Db::init())
-        .manage(Sessions::new())
-        .mount(
-            "/",
-            FileServer::new(BUILD_PATH, Options::Index | Options::NormalizeDirs),
-        )
-        .mount("/", routes::get_routes())
+	rocket::build()
+		.attach(Db::init())
+		.manage(Sessions::new())
+		.mount(
+			"/",
+			FileServer::new(BUILD_PATH, Options::Index | Options::NormalizeDirs),
+		)
+		.mount("/", routes::get_routes())
 }

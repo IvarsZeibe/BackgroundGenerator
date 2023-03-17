@@ -5,7 +5,9 @@ export type UserData = {
 	id: number,
 	email: string,
 	password: string,
-	isAdmin: boolean
+	isAdmin: boolean,
+	maxGenerators: number,
+	generatorsSaved: number
 };
 type VisibleUserData = {
 	id: number,
@@ -206,8 +208,8 @@ class BackendService {
 		return await response.json();
 	}
 
-	async setUserData(id: number, newId: number, email: string, password: string, isAdmin: boolean) {
-		let body = JSON.stringify({ id: newId, email, password, isAdmin });
+	async setUserData(id: number, newId: number, email: string, password: string, isAdmin: boolean, maxGenerators: number) {
+		let body = JSON.stringify({ id: newId, email, password, isAdmin, maxGenerators });
 		return await fetch("http://localhost:8000/api/users/" + id.toString(), {
 			method: "POST",
 			headers: {

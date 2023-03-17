@@ -42,6 +42,11 @@
 			isInvalid: false,
 			errorMessage: ''
 		},
+		maxGenerators: {
+			value: 10,
+			isInvalid: false,
+			errorMessage: ''
+		},
 	};
 	let openRowIndex = 0;
 
@@ -79,6 +84,7 @@
 		dialogData.email.value = user.email;
 		dialogData.password.value = '';
 		dialogData.isAdmin.value = user.isAdmin;
+		dialogData.maxGenerators.value = user.maxGenerators;
 	} 
 	function resetErrors() {
 		Object.keys(dialogData).forEach((k) => {
@@ -95,6 +101,15 @@
 		} else {
 			dialogData.id.isInvalid = false;
 			dialogData.id.errorMessage = "";
+		}
+	}
+	function validateMaxGenerators() {
+		if (dialogData.maxGenerators.value < 0) {
+			dialogData.maxGenerators.isInvalid = true;
+			dialogData.maxGenerators.errorMessage = "Must be atleast 0";
+		} else {
+			dialogData.maxGenerators.isInvalid = false;
+			dialogData.maxGenerators.errorMessage = "";
 		}
 	}
 	function validateEmail() {
@@ -130,6 +145,7 @@
 		users[openRowIndex].id = dialogData.id.value;
 		users[openRowIndex].email = dialogData.email.value;
 		users[openRowIndex].isAdmin = dialogData.isAdmin.value;
+		users[openRowIndex].maxGenerators = dialogData.maxGenerators.value;
 	}
 	function isAnyDialogDataInvalid(): boolean {
 		return Object.values(dialogData)
@@ -141,7 +157,7 @@
 	async function trySave() {
 		let data = await backendService.setUserData(
 			users[openRowIndex].id, dialogData.id.value, dialogData.email.value,
-			dialogData.password.value, dialogData.isAdmin.value
+			dialogData.password.value, dialogData.isAdmin.value, dialogData.maxGenerators.value
 		);
 		Object.keys(data).forEach((k: string) => {
 			let key = k as keyof DialogData;
@@ -177,8 +193,16 @@
 			<IconButton class="material-icons">arrow_upward</IconButton>
 		</Cell>
 		<Cell sortable={false}>
-			<Label>IsAdmin</Label>
+			<Label>Is Admin</Label>
+		</Cell>		
+		<Cell numeric columnId="generator-limit">
+			<Label>Max Generators</Label>
+			<IconButton class="material-icons">arrow_upward</IconButton>
 		</Cell>
+		<Cell numeric columnId="generators-saved">
+			<Label>Generators Saved</Label>
+			<IconButton class="material-icons">arrow_upward</IconButton>
+		</Cell>		
 		</Row>
 	</Head>
 	<Body>
@@ -189,6 +213,8 @@
 			{/if}
 			<Cell>{user.email}</Cell>
 			<Cell>{user.isAdmin}</Cell>
+			<Cell>{user.maxGenerators}</Cell>
+			<Cell>{user.generatorsSaved}</Cell>
 			<Cell><Button on:click={() => openEditDialog(i)}><ButtonLabel>Edit</ButtonLabel></Button></Cell>
 		</Row>
 		{/each}
@@ -245,6 +271,16 @@
 				<Switch bind:checked={dialogData.isAdmin.value} />	
 				<span slot="label">Is admin</span>
 			</FormField>
+		</div>
+		<div>
+			<Textfield
+				on:blur={validateMaxGenerators}
+				bind:value={dialogData.maxGenerators.value}
+				bind:invalid={dialogData.maxGenerators.isInvalid}
+				label="Max Generators" type="number"
+			>
+				<HelperText validationMsg slot="helper">{dialogData.maxGenerators.errorMessage}</HelperText>
+			</Textfield>
 		</div>
 	</Content>
 	<Actions>
