@@ -7,7 +7,9 @@ export type UserData = {
 	password: string,
 	isAdmin: boolean,
 	maxGenerators: number,
-	generatorsSaved: number
+	generatorsSaved: number,
+	dateCreated: Date,
+	lastAuthorized: Date
 };
 type VisibleUserData = {
 	id: number,
@@ -19,6 +21,7 @@ export type GeneratorDescription = {
 	name: string,
 	description: string,
 	dateCreated: Date,
+	dateModified: Date,
 	generatorType: string,
 	generatorTypeCode: string,
 	image: string
@@ -77,7 +80,12 @@ class BackendService {
 			headers: { "Content-type": "application/json" }
 		});
 		if (response.ok) {
-			return response.json();
+			let users = await response.json();
+			return users.map((u: any) => {
+				u.dateCreated = new Date(u.dateCreated);
+				u.lastAuthorized = new Date(u.lastAuthorized);
+				return u;
+			});
 		} else {
 			return [];
 		}
@@ -190,6 +198,7 @@ class BackendService {
 			return {
 				...generator,
 				dateCreated: new Date(generator.dateCreated),
+				dateModified: new Date(generator.dateModified),
 				image: await base64_arraybuffer(new Uint8Array(generator.image))
 			};
 		}));

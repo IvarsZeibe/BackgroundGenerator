@@ -1,4 +1,5 @@
 use argon2::{password_hash::SaltString, Argon2, PasswordHasher};
+use chrono::Local;
 use rand::rngs::OsRng;
 use sea_orm::{ActiveModelTrait, ConnectOptions, ConnectionTrait, DatabaseConnection, Schema, Set};
 use sea_orm_rocket::{rocket::figment::Figment, Config, Database};
@@ -150,6 +151,8 @@ async fn add_default_admin(db: &DatabaseConnection) {
 		password: Set(hashed_password),
 		is_admin: Set(true),
 		max_generators: Set(15),
+		date_created: Set(Local::now().naive_local()),
+		last_authorized: Set(Local::now().naive_local()),
 		..Default::default()
 	};
 	match user.insert(db).await {

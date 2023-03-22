@@ -11,6 +11,8 @@ pub struct Model {
 	#[sea_orm(default_value = false)]
 	pub is_admin: bool,
 	pub max_generators: i32,
+	pub date_created: DateTime,
+	pub last_authorized: DateTime,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

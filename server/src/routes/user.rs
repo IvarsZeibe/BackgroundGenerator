@@ -38,6 +38,8 @@ async fn get_profile(
 		password: _,
 		is_admin,
 		max_generators: _,
+		date_created: _,
+		last_authorized: _
 	}) = user
 	{
 		Ok(Json(viewmodels::user_data::BasicUserData {
@@ -133,6 +135,7 @@ async fn get_my_generators(conn: Connection<'_, Db>, auth: Auth) -> Json<Vec<MyG
 			name: g.name,
 			description: g.description,
 			date_created: g.date_created,
+			date_modified: g.date_modified,
 			generator_type: generator_type.name,
 			generator_code: generator_type.code,
 			image: image,

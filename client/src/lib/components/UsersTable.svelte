@@ -195,14 +195,22 @@
 		<Cell sortable={false}>
 			<Label>Is Admin</Label>
 		</Cell>		
-		<Cell numeric columnId="generator-limit">
+		<Cell numeric columnId="maxGenerators">
 			<Label>Max Generators</Label>
 			<IconButton class="material-icons">arrow_upward</IconButton>
 		</Cell>
-		<Cell numeric columnId="generators-saved">
+		<Cell numeric columnId="generatorsSaved">
 			<Label>Generators Saved</Label>
 			<IconButton class="material-icons">arrow_upward</IconButton>
-		</Cell>		
+		</Cell>
+		<Cell numeric columnId="dateCreated">
+			<Label>Created on</Label>
+			<IconButton class="material-icons">arrow_upward</IconButton>
+		</Cell>
+		<Cell numeric columnId="lastAuthorized">
+			<Label>Last authorized</Label>
+			<IconButton class="material-icons">arrow_upward</IconButton>
+		</Cell>
 		</Row>
 	</Head>
 	<Body>
@@ -215,6 +223,14 @@
 			<Cell>{user.isAdmin}</Cell>
 			<Cell>{user.maxGenerators}</Cell>
 			<Cell>{user.generatorsSaved}</Cell>
+			<Cell>{user.dateCreated.toLocaleString("en-UK", {
+				year: 'numeric', month: '2-digit', day: '2-digit',
+				hour: "2-digit", minute: "2-digit", hour12: false
+			})}</Cell>
+			<Cell>{user.lastAuthorized.toLocaleString("en-UK", {
+				year: 'numeric', month: '2-digit', day: '2-digit',
+				hour: "2-digit", minute: "2-digit", hour12: false
+			})}</Cell>
 			<Cell><Button on:click={() => openEditDialog(i)}><ButtonLabel>Edit</ButtonLabel></Button></Cell>
 		</Row>
 		{/each}

@@ -1,4 +1,5 @@
 use argon2::{password_hash::SaltString, Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
+use chrono::Local;
 use rand::rngs::OsRng;
 use rocket::{
 	http::{Cookie, CookieJar},
@@ -49,6 +50,9 @@ async fn register(
 	let user = user::ActiveModel {
 		email: Set(user.email),
 		password: Set(hashed_password),
+		date_created: Set(Local::now().naive_local()),
+		last_authorized: Set(Local::now().naive_local()),
+		max_generators: Set(15),
 		..Default::default()
 	};
 	let user = user.insert(db).await.expect("failed to register");
@@ -89,8 +93,11 @@ async fn login(
 			.verify_password(&user_login_data.password.as_bytes(), &parsed_hash)
 			.is_ok()
 		{
+			let mut user: user::ActiveModel = user.into();
+			user.last_authorized = Set(Local::now().naive_local());
+			let mut user = user.save(db).await.unwrap();
 			let sessions = sessions.inner();
-			let session_code = sessions.add(user.id);
+			let session_code = sessions.add(user.id.take().unwrap());
 			cookies.add_private(Cookie::new("session", session_code));
 			return Ok(status::Accepted(None));
 		}

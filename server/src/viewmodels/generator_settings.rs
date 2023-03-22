@@ -18,6 +18,8 @@ pub struct MyGenerator {
 	pub description: String,
 	#[serde(rename = "dateCreated")]
 	pub date_created: NaiveDateTime,
+	#[serde(rename = "dateModified")]
+	pub date_modified: NaiveDateTime,
 	#[serde(rename = "generatorType")]
 	pub generator_type: String,
 	#[serde(rename = "generatorTypeCode")]

@@ -39,6 +39,8 @@ async fn get_users(
 			is_admin: user.is_admin,
 			max_generators: user.max_generators,
 			generators_saved: saved_generators_count as i32,
+			date_created: user.date_created,
+			last_authorized: user.last_authorized
 		}
 	}
 

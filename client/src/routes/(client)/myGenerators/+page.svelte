@@ -51,6 +51,7 @@
 			backendService.editGeneratorDescription(generator.id, editedGeneratorName, editedGeneratorDescription);
 			generator.name = editedGeneratorName;
 			generator.description = editedGeneratorDescription;
+			generator.dateModified = new Date();
 			generators = generators;
 		}
 	}
@@ -70,6 +71,11 @@
 					</h2>
 					<h3 class="mdc-typography--subtitle2" style="margin: 0; color: #888;">
 						Created on {generator.dateCreated.toLocaleString("en-UK",
+						{ year: 'numeric', month: '2-digit', day: '2-digit',
+						hour: "2-digit", minute: "2-digit", hour12: false })}
+					</h3>
+					<h3 class="mdc-typography--subtitle2" style="margin: 0; color: #888;">
+						Modified on {generator.dateModified.toLocaleString("en-UK",
 						{ year: 'numeric', month: '2-digit', day: '2-digit',
 						hour: "2-digit", minute: "2-digit", hour12: false })}
 					</h3>

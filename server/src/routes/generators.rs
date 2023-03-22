@@ -58,6 +58,7 @@ async fn save_generator_description(
 		description: Set(description),
 		user_id: Set(user_id),
 		date_created: Set(Local::now().naive_local()),
+		date_modified: Set(Local::now().naive_local()),
 		generator_type: Set(generator_type),
 		..Default::default()
 	};
@@ -89,6 +90,7 @@ async fn modify_generator_description(
 		generator_description.into();
 	generator_description.name = Set(name);
 	generator_description.description = Set(description);
+	generator_description.date_modified = Set(Local::now().naive_local());
 	generator_description.save(db).await.unwrap();
 
 	let image = image.thumbnail(640, 360);
@@ -146,10 +148,10 @@ async fn edit_generator_description(
 	if generator_description.user_id != auth.user_id {
 		return Err(NotFound(()));
 	}
-	let mut generator_description: generator_description::ActiveModel =
-		generator_description.into();
+	let mut generator_description: generator_description::ActiveModel = generator_description.into();
 	generator_description.name = Set(name);
 	generator_description.description = Set(description);
+	generator_description.date_modified = Set(Local::now().naive_local());
 	generator_description.save(db).await.unwrap();
 	return Ok(Accepted(None));
 }

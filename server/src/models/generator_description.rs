@@ -8,6 +8,7 @@ pub struct Model {
 	pub name: String,
 	pub description: String,
 	pub date_created: DateTime,
+	pub date_modified: DateTime,
 	pub user_id: i32,
 	pub generator_type: i32,
 }
