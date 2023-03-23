@@ -5,7 +5,7 @@ use sea_orm::{ActiveModelTrait, ConnectOptions, ConnectionTrait, DatabaseConnect
 use sea_orm_rocket::{rocket::figment::Figment, Config, Database};
 use std::time::Duration;
 
-use crate::models::{sea_orm_active_enums::PreferredTheme, user, user_settings};
+use crate::{models::{sea_orm_active_enums::PreferredTheme, user, user_settings}, password_helper};
 
 #[derive(Database, Debug)]
 #[database("mydb")]
@@ -140,12 +140,8 @@ async fn add_tables_if_none(conn: &DatabaseConnection) {
 }
 
 async fn add_default_admin(db: &DatabaseConnection) {
-	let password = b"admin123";
-	let salt = SaltString::generate(&mut OsRng);
-	let hashed_password = Argon2::default()
-		.hash_password(password, &salt)
-		.unwrap()
-		.to_string();
+	let password = "admin123".to_string();
+	let hashed_password = password_helper::hash_password(password).unwrap();
 	let user = user::ActiveModel {
 		email: Set(String::from("admin@admin.admin")),
 		password: Set(hashed_password),

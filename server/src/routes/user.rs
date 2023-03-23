@@ -1,4 +1,5 @@
-use rocket::{futures, response::status, serde::json::Json, Route};
+use argon2::{PasswordHash, Argon2, PasswordVerifier};
+use rocket::{futures, response::status::{self, Accepted, BadRequest}, serde::json::Json, Route};
 use sea_orm::*;
 use sea_orm_rocket::Connection;
 use std::fs;
@@ -7,7 +8,7 @@ use crate::{
 	auth::Auth,
 	models::{self, sea_orm_active_enums::PreferredTheme, *},
 	pools::Db,
-	viewmodels::{self, generator_settings::MyGenerator},
+	viewmodels::{self, generator_settings::MyGenerator, user_data::{PasswordChange, EmailChange}}, password_helper, email_validator,
 };
 
 pub fn get_routes() -> impl Iterator<Item = Route> {
@@ -15,7 +16,9 @@ pub fn get_routes() -> impl Iterator<Item = Route> {
 		get_profile,
 		get_preferred_theme,
 		set_preferred_theme,
-		get_my_generators
+		get_my_generators,
+		change_password,
+		change_email
 	]
 	.into_iter()
 }
@@ -143,4 +146,33 @@ async fn get_my_generators(conn: Connection<'_, Db>, auth: Auth) -> Json<Vec<MyG
 	}
 
 	Json(futures::future::join_all(generators.into_iter().map(|g| to_my_generator(g, db))).await)
+}
+
+#[post("/api/profile/password", data = "<password_change>")]
+async fn change_password(password_change: Json<PasswordChange>, conn: Connection<'_, Db>, auth: Auth) -> Result<Accepted<()>, BadRequest<&'static str>> {
+	let db = conn.into_inner();
+	let user = user::Entity::find_by_id(auth.user_id).one(db).await.unwrap().unwrap();
+
+	if !password_helper::is_password_correct(&user.password, &password_change.old_password) {
+		return Err(BadRequest(None));
+	}
+	password_helper::is_valid(&password_change.new_password)?;
+
+	let mut user: user::ActiveModel = user.into();
+	user.password = Set(password_helper::hash_password(password_change.0.new_password)?);
+	user.save(db).await.unwrap();
+	Ok(Accepted(None))
+}
+
+#[post("/api/profile/email", data = "<email_change>")]
+async fn change_email(email_change: Json<EmailChange>, conn: Connection<'_, Db>, auth: Auth) -> Result<Accepted<()>, BadRequest<&'static str>> {
+	let db = conn.into_inner();
+	email_validator::validate_email(&email_change.email, &db).await?;
+
+	let user = user::Entity::find_by_id(auth.user_id).one(db).await.unwrap().unwrap();
+
+	let mut user: user::ActiveModel = user.into();
+	user.email = Set(email_change.0.email);
+	user.save(db).await.unwrap();
+	Ok(Accepted(None))
 }

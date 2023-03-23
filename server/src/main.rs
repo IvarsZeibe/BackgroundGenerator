@@ -7,12 +7,14 @@ use sea_orm_rocket::Database;
 
 mod admin_auth;
 mod auth;
+mod password_helper;
 
 mod models;
 
 mod viewmodels;
 
 mod pools;
+mod email_validator;
 use pools::Db;
 
 mod sessions;

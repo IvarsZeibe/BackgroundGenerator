@@ -14,7 +14,7 @@ use crate::{
 	models::{sea_orm_active_enums::PreferredTheme, *},
 	pools::Db,
 	sessions::*,
-	viewmodels,
+	viewmodels, password_helper, email_validator,
 };
 
 pub fn get_routes() -> impl Iterator<Item = Route> {
@@ -31,22 +31,11 @@ async fn register(
 	let db = conn.into_inner();
 
 	//is email unqiue
-	if user::Entity::find()
-		.filter(user::Column::Email.eq(user.email.clone()))
-		.one(db)
-		.await
-		.unwrap()
-		.is_some()
-	{
-		return Err(status::BadRequest(Some("Email already used")));
-	}
+	email_validator::validate_email(&user.email, &db).await?;
 
 	let user = user.into_inner();
-	let salt = SaltString::generate(&mut OsRng);
-	let hashed_password = match Argon2::default().hash_password(user.password.as_bytes(), &salt) {
-		Ok(p) => p.to_string(),
-		Err(_) => return Err(status::BadRequest(None)),
-	};
+	password_helper::is_valid(&user.password)?;
+	let hashed_password = password_helper::hash_password(user.password)?;
 	let user = user::ActiveModel {
 		email: Set(user.email),
 		password: Set(hashed_password),
@@ -88,10 +77,7 @@ async fn login(
 		Err(_) => return Err(status::BadRequest(Some("Login failed"))),
 	};
 	if let Some(user) = user {
-		let parsed_hash = PasswordHash::new(&user.password).unwrap();
-		if Argon2::default()
-			.verify_password(&user_login_data.password.as_bytes(), &parsed_hash)
-			.is_ok()
+		if password_helper::is_password_correct(&user.password, &user_login_data.password)
 		{
 			let mut user: user::ActiveModel = user.into();
 			user.last_authorized = Set(Local::now().naive_local());

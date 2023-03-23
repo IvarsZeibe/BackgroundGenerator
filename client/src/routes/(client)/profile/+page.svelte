@@ -2,7 +2,11 @@
     import backendService from '$lib/backend-service';
     import Button from '@smui/button/src/Button.svelte';
 	import Select, { Option } from '@smui/select';
-    import { ThemeMode, themeMode } from '../../../stores';
+    import Textfield from '@smui/textfield';
+    import HelperText from '@smui/textfield/helper-text';
+    import { onMount } from 'svelte';
+    import { ThemeMode, themeMode, user } from '../../../stores';
+	import ValidationHelper from '$lib/validation-helper';
 
 	let options = [ThemeMode.UseDeviceTheme, ThemeMode.Light, ThemeMode.Dark];
 	let value: ThemeMode | "loading" = "loading";
@@ -10,6 +14,20 @@
 	$: if (value == "loading" && $themeMode != null) {
 		value = $themeMode;
 	}
+	let email = $user.getAuthorisedUserData().email;
+	let isEmailInvalid = false;
+	let emailError = "";
+
+	let oldPassword = "";
+	let isOldPasswordInvalid = false;
+	let oldPasswordError = "";
+
+	let newPassword = "";
+	let comfirmNewPassword = "";
+	let isNewPasswordInvalid = false;
+	let newPasswordError = "";
+
+	let isEditingPassword = false;
 
 	function getThemeModeName(theme: ThemeMode): string {
 		switch(theme) {
@@ -21,6 +39,55 @@
 				return "Use device theme";
 		}
 	}
+	
+	async function changeEmail() {
+		isEmailInvalid = false;
+		emailError = "";
+		
+		let error = ValidationHelper.validateEmail(email)
+		if (error) {
+			isEmailInvalid = true;
+			emailError = error;
+			return;
+		}
+		let response = await backendService.changeEmail(email);
+		if (response.ok) {
+			isEmailInvalid = false;
+			emailError = "";
+		} else {
+			isEmailInvalid = true;
+			emailError = await response.text();
+		}
+	}
+
+	async function changePassword() {
+		isNewPasswordInvalid = false;
+		newPasswordError = "";
+		isOldPasswordInvalid = false;
+		oldPasswordError = "";
+
+		if (newPassword != comfirmNewPassword) {
+			isNewPasswordInvalid = true;
+			newPasswordError = "Passwords do not match";
+			return;
+		}
+		let error = ValidationHelper.validatePassword(newPassword)
+		if (error) {
+			isNewPasswordInvalid = true;
+			newPasswordError = error;
+			return;
+		}
+		let response = await backendService.changePassword(oldPassword, newPassword);
+		if (response.ok) {
+			isEditingPassword = false;
+			oldPassword = "";
+			newPassword = "";
+			comfirmNewPassword = "";
+		} else {
+			isOldPasswordInvalid = true;
+			oldPasswordError = await response.text();
+		}
+	}
 </script>
 
 <svelte:head>
@@ -29,17 +96,83 @@
 
 <h1>Your profile</h1>
 
-<h2>Preferred theme</h2>
-<Select bind:value >
-	{#each options as option}
-        <Option value={option}>{getThemeModeName(option)}</Option>
-	{/each}
-	{#if value == "loading"}
-		<Option value={"loading"}>Loading...</Option>
-	{/if}
-</Select>
-<Button on:click={() => {
-	if (value !== "loading") {
-		backendService.setUserPreferredTheme(value);
-	}
-}}>Save</Button>
+<div class="container">
+	<h2>Preferred theme</h2>
+	<div class="input-group">
+		<Select bind:value >
+			{#each options as option}
+				<Option value={option}>{getThemeModeName(option)}</Option>
+			{/each}
+			{#if value == "loading"}
+				<Option value={"loading"}>Loading...</Option>
+			{/if}
+		</Select>
+		<Button on:click={() => {
+			if (value !== "loading") {
+				backendService.setUserPreferredTheme(value);
+			}
+		}}>Save</Button>
+	</div>
+
+	<h2>Email</h2>
+	<div class="input-group">
+		<Textfield
+			bind:value={email}
+			bind:invalid={isEmailInvalid}
+			label="Email"
+		>
+			<HelperText validationMsg slot="helper">{emailError}</HelperText>
+		</Textfield>
+		<Button on:click={() => {changeEmail()
+		}}>Save</Button>			
+	</div>
+
+	<div>
+		<h2>Password</h2>
+		{#if !isEditingPassword}
+		<Button on:click={() => {
+			isEditingPassword = true;
+		}}>Change</Button>
+		{:else}
+		<Textfield
+			bind:value={oldPassword}
+			label="Old password"
+			bind:invalid={isOldPasswordInvalid}
+			type="password"
+		>
+			<HelperText validationMsg slot="helper">{oldPasswordError}</HelperText>
+		</Textfield><br>
+		<Textfield
+			bind:value={newPassword}
+			label="New password"
+			bind:invalid={isNewPasswordInvalid}
+			type="password"
+		>
+			<HelperText validationMsg slot="helper">{newPasswordError}</HelperText>
+		</Textfield><br>
+		<Textfield
+			bind:value={comfirmNewPassword}
+			label="Comfirm new password"
+			bind:invalid={isNewPasswordInvalid}
+			type="password"
+		>
+			<HelperText validationMsg slot="helper">{newPasswordError}</HelperText>
+		</Textfield><br>
+		<Button on:click={() => {changePassword()
+		}}>Save</Button>
+		{/if}
+	</div>
+	
+</div>
+
+<style>
+.container {
+	display: flex;
+	flex-direction: column;
+}
+.input-group {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+}
+</style>

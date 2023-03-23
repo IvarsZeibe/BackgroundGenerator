@@ -255,6 +255,22 @@ class BackendService {
 			throw "Failed to get preferrred theme";
 		}
 	}
+	async changeEmail(email: string): Promise<Response> {
+		let body = JSON.stringify({ email });
+		let response = await this.#accessAPI("profile/email", {
+			method: "POST",
+			body
+		});
+		return response;
+	}
+	async changePassword(oldPassword: string, newPassword: string): Promise<Response> {
+		let body = JSON.stringify({ oldPassword, newPassword });
+		let response = await this.#accessAPI("profile/password", {
+			method: "POST",
+			body
+		});
+		return response;
+	}
 }
 
 export default new BackendService();

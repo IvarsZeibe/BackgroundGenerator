@@ -17,6 +17,7 @@
 	import HelperText from '@smui/textfield/helper-text';
 	import backendService, { type UserData } from '$lib/backend-service';
 	import { onMount } from 'svelte';
+	import validationHelper from '$lib/validation-helper';
 	
 	type DialogData = typeof dialogData;
 	
@@ -113,19 +114,20 @@
 		}
 	}
 	function validateEmail() {
-		let validEmailPattern = /^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,253}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,253}[a-zA-Z0-9])?)*$/;
-		if (validEmailPattern.test(dialogData.email.value)) {
+		let error = validationHelper.validateEmail(dialogData.email.value);
+		if (error) {
+			dialogData.email.isInvalid = true;
+			dialogData.email.errorMessage = error;
+		} else {
 			dialogData.email.isInvalid = false;
 			dialogData.email.errorMessage = "";
-		} else {
-			dialogData.email.isInvalid = true;
-			dialogData.email.errorMessage = "Must be a valid email";
 		}
 	}
 	function validatePassword() {
-		if (dialogData.password.value.length < 8 && dialogData.password.value.length != 0) {
+		let error = validationHelper.validatePassword(dialogData.password.value);
+		if (error && dialogData.password.value.length != 0) {
 			dialogData.password.isInvalid = true;
-			dialogData.password.errorMessage = "must be atleast 8 characters";
+			dialogData.password.errorMessage = error;
 		} else {
 			dialogData.password.isInvalid = false;
 			dialogData.password.errorMessage = "";
