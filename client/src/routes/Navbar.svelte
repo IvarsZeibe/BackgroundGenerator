@@ -1,13 +1,26 @@
 <script lang="ts">
     import Button from "@smui/button";
     import TopAppBar, { Row, Section, Title } from "@smui/top-app-bar";
-	import { ThemeMode, user } from "../stores";
+	import { themeMode, ThemeMode, user } from "../stores";
 	import IconButton from '@smui/icon-button';
     import backendService from "$lib/backend-service";
 	import Logo from "./Logo.svelte";
 
-	export let isLightTheme: boolean | null;
-	export let topAppBar;
+	export let topAppBar: TopAppBar;
+	export let isLightThemeDevicePreferred: boolean | null;
+	let isLightTheme: boolean | null = null;
+	
+	$: switch($themeMode) {
+		case ThemeMode.Dark:
+			isLightTheme = false;
+			break;
+		case ThemeMode.Light:
+			isLightTheme = true;
+			break;
+		case ThemeMode.UseDeviceTheme:
+			isLightTheme = isLightThemeDevicePreferred;
+			break;
+	}
 </script>
 
 <TopAppBar

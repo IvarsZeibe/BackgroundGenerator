@@ -20,8 +20,10 @@
 		});
 		if (themeLink?.href) {
 			isLightTheme = themeLink?.href == location.origin + "/smui.css";
+			$themeMode = isLightTheme ? ThemeMode.Light : ThemeMode.Dark;
 		} else {
 			isLightTheme = isLightThemeDevicePreferred;
+			$themeMode = ThemeMode.UseDeviceTheme;
 		}
 	}
 
@@ -29,7 +31,7 @@
 		backendService.setProfile();
 	});
 
-	$: if (isLightThemeDevicePreferred) {
+	$: if (isLightThemeDevicePreferred != null) {
 		switch($themeMode) {
 			case ThemeMode.UseDeviceTheme:
 				localStorage.removeItem("previousTheme");
@@ -65,12 +67,14 @@
 </svelte:head>
 
 <div class="app">
-	<Navbar bind:topAppBar bind:isLightTheme />
+	<Navbar bind:topAppBar bind:isLightThemeDevicePreferred />
+	<div id="main-content">
 	<AutoAdjust id="main-content" {topAppBar}>
 		<slot />
 	</AutoAdjust>
+	</div>
 	<footer>
-		<p>visit <a href="https://kit.svelte.dev">kit.svelte.dev</a> to learn SvelteKit</p>
+		<p>Made by Ivars Žeibe</p>
 	</footer>
 </div>
 
