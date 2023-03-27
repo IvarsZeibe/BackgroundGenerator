@@ -1,4 +1,4 @@
-use argon2::{password_hash::SaltString, Argon2, PasswordHasher, PasswordHash, PasswordVerifier};
+use argon2::{password_hash::SaltString, Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
 use rand::rngs::OsRng;
 use rocket::response::status::BadRequest;
 
@@ -19,5 +19,7 @@ pub fn hash_password(password: String) -> Result<String, BadRequest<&'static str
 
 pub fn is_password_correct(expected: &String, actual: &String) -> bool {
 	let parsed_hash = PasswordHash::new(expected).unwrap();
-	Argon2::default().verify_password(actual.as_bytes(), &parsed_hash).is_ok()
+	Argon2::default()
+		.verify_password(actual.as_bytes(), &parsed_hash)
+		.is_ok()
 }

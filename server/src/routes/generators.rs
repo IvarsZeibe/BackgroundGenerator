@@ -148,7 +148,8 @@ async fn edit_generator_description(
 	if generator_description.user_id != auth.user_id {
 		return Err(NotFound(()));
 	}
-	let mut generator_description: generator_description::ActiveModel = generator_description.into();
+	let mut generator_description: generator_description::ActiveModel =
+		generator_description.into();
 	generator_description.name = Set(name);
 	generator_description.description = Set(description);
 	generator_description.date_modified = Set(Local::now().naive_local());

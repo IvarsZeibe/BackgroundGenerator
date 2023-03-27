@@ -1,6 +1,4 @@
-use argon2::{password_hash::SaltString, Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
 use chrono::Local;
-use rand::rngs::OsRng;
 use rocket::{
 	http::{Cookie, CookieJar},
 	response::status,
@@ -11,10 +9,12 @@ use sea_orm::*;
 use sea_orm_rocket::Connection;
 
 use crate::{
+	email_validator,
 	models::{sea_orm_active_enums::PreferredTheme, *},
+	password_helper,
 	pools::Db,
 	sessions::*,
-	viewmodels, password_helper, email_validator,
+	viewmodels,
 };
 
 pub fn get_routes() -> impl Iterator<Item = Route> {
@@ -77,8 +77,7 @@ async fn login(
 		Err(_) => return Err(status::BadRequest(Some("Login failed"))),
 	};
 	if let Some(user) = user {
-		if password_helper::is_password_correct(&user.password, &user_login_data.password)
-		{
+		if password_helper::is_password_correct(&user.password, &user_login_data.password) {
 			let mut user: user::ActiveModel = user.into();
 			user.last_authorized = Set(Local::now().naive_local());
 			let mut user = user.save(db).await.unwrap();

@@ -1,11 +1,12 @@
-use argon2::{password_hash::SaltString, Argon2, PasswordHasher};
 use chrono::Local;
-use rand::rngs::OsRng;
 use sea_orm::{ActiveModelTrait, ConnectOptions, ConnectionTrait, DatabaseConnection, Schema, Set};
 use sea_orm_rocket::{rocket::figment::Figment, Config, Database};
 use std::time::Duration;
 
-use crate::{models::{sea_orm_active_enums::PreferredTheme, user, user_settings}, password_helper};
+use crate::{
+	models::{sea_orm_active_enums::PreferredTheme, user, user_settings},
+	password_helper,
+};
 
 #[derive(Database, Debug)]
 #[database("mydb")]

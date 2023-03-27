@@ -14,5 +14,5 @@ pub struct DetailedUserData {
 	#[serde(rename = "dateCreated")]
 	pub date_created: NaiveDateTime,
 	#[serde(rename = "lastAuthorized")]
-	pub last_authorized: NaiveDateTime
+	pub last_authorized: NaiveDateTime,
 }

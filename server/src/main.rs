@@ -13,8 +13,8 @@ mod models;
 
 mod viewmodels;
 
-mod pools;
 mod email_validator;
+mod pools;
 use pools::Db;
 
 mod sessions;
