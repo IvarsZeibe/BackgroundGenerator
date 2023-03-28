@@ -16,8 +16,8 @@ use crate::{
 };
 
 use super::{
-	delete_generator_description, is_generator_limit_reached, modify_generator_description,
-	save_generator_description,
+	check_if_generator_limit_is_reached, delete_generator_description,
+	modify_generator_description, save_generator_description,
 };
 
 pub fn get_routes() -> impl Iterator<Item = Route> {
@@ -87,9 +87,7 @@ async fn save_chains_generator_settings(
 
 	let Ok(image) = generate(generator_settings.clone()) else { return Err(BadRequest(None))};
 
-	if is_generator_limit_reached(db, auth.user_id).await {
-		return Err(BadRequest(None));
-	}
+	check_if_generator_limit_is_reached(db, auth.user_id).await?;
 
 	let generator_description =
 		save_generator_description(db, auth.user_id, name, description, image, 2).await?;

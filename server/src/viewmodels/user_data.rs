@@ -2,6 +2,7 @@ mod basic_user_data;
 mod detailed_user_data;
 mod email_change;
 mod login;
+pub mod my_generators;
 mod password_change;
 mod register;
 mod update_user;

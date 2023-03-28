@@ -1,4 +1,3 @@
-use chrono::NaiveDateTime;
 use rocket::serde::{Deserialize, Serialize};
 
 #[derive(Deserialize, Serialize)]
@@ -8,23 +7,6 @@ pub struct Settings<T> {
 	pub description: String,
 	#[serde(rename = "generatorSettings")]
 	pub generator_settings: T,
-}
-
-#[derive(Serialize)]
-#[serde(crate = "rocket::serde")]
-pub struct MyGenerator {
-	pub id: String,
-	pub name: String,
-	pub description: String,
-	#[serde(rename = "dateCreated")]
-	pub date_created: NaiveDateTime,
-	#[serde(rename = "dateModified")]
-	pub date_modified: NaiveDateTime,
-	#[serde(rename = "generatorType")]
-	pub generator_type: String,
-	#[serde(rename = "generatorTypeCode")]
-	pub generator_code: String,
-	pub image: Vec<u8>,
 }
 
 #[derive(Deserialize, Serialize, Clone)]

@@ -1,5 +1,4 @@
 use rocket::{
-	futures,
 	response::status::{self, Accepted, BadRequest},
 	serde::json::Json,
 	Route,
@@ -16,8 +15,10 @@ use crate::{
 	pools::Db,
 	viewmodels::{
 		self,
-		generator_settings::MyGenerator,
-		user_data::{EmailChange, PasswordChange},
+		user_data::{
+			my_generators::{GeneratorDescription, MyGenerators},
+			EmailChange, PasswordChange,
+		},
 	},
 };
 
@@ -119,7 +120,7 @@ async fn set_preferred_theme(preferred_theme: String, conn: Connection<'_, Db>, 
 }
 
 #[get("/api/myGenerators")]
-async fn get_my_generators(conn: Connection<'_, Db>, auth: Auth) -> Json<Vec<MyGenerator>> {
+async fn get_my_generators(conn: Connection<'_, Db>, auth: Auth) -> Json<MyGenerators> {
 	let db = conn.into_inner();
 	let user = models::user::Entity::find_by_id(auth.user_id)
 		.one(db)
@@ -132,30 +133,30 @@ async fn get_my_generators(conn: Connection<'_, Db>, auth: Auth) -> Json<Vec<MyG
 		.await
 		.unwrap();
 
-	async fn to_my_generator(
-		g: generator_description::Model,
-		db: &DatabaseConnection,
-	) -> MyGenerator {
-		let generator_type = models::generator_type::Entity::find_by_id(g.generator_type)
+	let mut generator_descriptions = Vec::new();
+	for generator in generators {
+		let generator_type = models::generator_type::Entity::find_by_id(generator.generator_type)
 			.one(db)
 			.await
 			.unwrap()
 			.unwrap();
-
-		let image = fs::read(format!("data/{}.jpg", g.id.clone())).unwrap_or(vec![]);
-		MyGenerator {
-			id: g.id,
-			name: g.name,
-			description: g.description,
-			date_created: g.date_created,
-			date_modified: g.date_modified,
+		let image = fs::read(format!("data/{}.jpg", generator.id)).unwrap_or(vec![]);
+		generator_descriptions.push(GeneratorDescription {
+			id: generator.id.to_string(),
+			name: generator.name,
+			description: generator.description,
+			date_created: generator.date_created,
+			date_modified: generator.date_modified,
 			generator_type: generator_type.name,
 			generator_code: generator_type.code,
-			image: image,
-		}
+			image,
+		});
 	}
 
-	Json(futures::future::join_all(generators.into_iter().map(|g| to_my_generator(g, db))).await)
+	Json(MyGenerators {
+		max_generators: user.max_generators,
+		generator_descriptions,
+	})
 }
 
 #[post("/api/profile/password", data = "<password_change>")]

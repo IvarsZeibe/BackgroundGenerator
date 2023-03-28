@@ -24,10 +24,11 @@
 	let editAction = () => {};
 
 	onMount(async () => {
-		generators = await backendService.getMyGenerators();
+		({maxGenerators, generatorDescriptions: generators} = await backendService.getMyGenerators());
 	})
 
 	let generators: GeneratorDescription[] = [];
+	let maxGenerators = 0;
 
 	function openGenerator(generator: GeneratorDescription) {
 		goto(`/${generator.generatorTypeCode}/?id=${generator.id}`)
@@ -58,7 +59,7 @@
 	
 </script>
 
-<h1>My generators</h1>
+<h1>My generators ({generators.length}/{maxGenerators})</h1>
 <div>
 <div class="card-display">
 	{#each generators as generator}
@@ -144,6 +145,9 @@
 </Dialog>
 
 <style>
+	h1 {
+		text-align: center;
+	}
 	.card-display {
 		display: flex;
 		flex-wrap: wrap;

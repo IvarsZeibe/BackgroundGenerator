@@ -26,6 +26,10 @@ export type GeneratorDescription = {
 	generatorTypeCode: string,
 	image: string
 }
+type MyGenerators = {
+	maxGenerators: number,
+	generatorDescriptions: GeneratorDescription[]
+}
 class BackendService {
 	async #accessAPI(path: string, settings: RequestInit | undefined) {
 		try {
@@ -159,7 +163,7 @@ class BackendService {
 	
 	async saveGeneratorChanges(type: string, id: string, name: string, description: string, generatorSettings: { [key: string]: any}) {
 		let body: string = JSON.stringify({ name, description, generatorSettings });
-		await this.#accessAPI("generator/" + type + "/" + id + "/save", {
+		return await this.#accessAPI("generator/" + type + "/" + id + "/save", {
 			method: "POST",
 			headers: {
 				"Content-type": "application/json"
@@ -179,11 +183,11 @@ class BackendService {
 		});
 	}
 
-	async getMyGenerators(): Promise<GeneratorDescription[]> {
+	async getMyGenerators(): Promise<MyGenerators> {
 		let response = await this.#accessAPI("myGenerators", {
 			method: "GET"
 		});
-		let res: any[] = await response.json();
+		let res: any = await response.json();
 		
 		const base64_arraybuffer = async (data: any) => {
 			const base64url: any = await new Promise((r) => {
@@ -193,8 +197,7 @@ class BackendService {
 			})
 			return base64url.split(",", 2)[1]
 		}
-		
-		let generators = Promise.all(res.map(async generator => {
+		res.generatorDescriptions = await Promise.all(res.generatorDescriptions.map(async (generator: any) => {
 			return {
 				...generator,
 				dateCreated: new Date(generator.dateCreated),
@@ -202,7 +205,7 @@ class BackendService {
 				image: await base64_arraybuffer(new Uint8Array(generator.image))
 			};
 		}));
-		return generators;
+		return res;
 	}
 	async getMyGenerator(name: string, id: string) {
 		let response = await this.#accessAPI("generator/" + name + "/" + id, {

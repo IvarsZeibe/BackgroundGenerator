@@ -39,34 +39,51 @@
 	$context.description = "";
 	let previousName = "";
 	let previousDescription = "";
+	let errorMessage = "";
 
 	function toSentanceCase(text: string) {
 		return text.slice(0, 1).toUpperCase() + text.slice(1);
 	}
 	function openSaveDialog() {
+		errorMessage = "";
 		isDialogOpen = true;
 	}
-	async function save() {
+	async function handleSave(e: CustomEvent<any>) {
+		e.stopPropagation();
 		let response = await backendService.saveGenerator($context.generatorTypeName, $context.name, $context.description, $context.generatorSettings);
 		if (response.ok) {
 			previousName = $context.name;
 			previousDescription = $context.description;
 			data.id = await response.text();
+			isDialogOpen = false;
 		} else {
-			console.log("Saving failed");
+			if (response.status == 400) {
+				let message = await response.text();
+				if (message != '') {
+					errorMessage = `Saving failed (${message})`;
+					return;
+				}
+			}
+			errorMessage = `Saving failed`;
 		}
 	}
 	function cancel() {
 		$context.name = previousName;
 		$context.description = previousDescription;
 	}
-	function saveChanges() {
+	async function saveChanges(e: CustomEvent<any>) {
+		e.stopPropagation();
 		if (!data.id) {
 			return;
 		}
-		backendService.saveGeneratorChanges($context.generatorTypeName, data.id, $context.name, $context.description, $context.generatorSettings);
-		previousName = $context.name;
-		previousDescription = $context.description;
+		let response = await backendService.saveGeneratorChanges($context.generatorTypeName, data.id, $context.name, $context.description, $context.generatorSettings);
+		if (response.ok) {
+			previousName = $context.name;
+			previousDescription = $context.description;
+			isDialogOpen = false;
+		} else {
+			errorMessage = `Saving failed`;
+		}
 	}
 	onMount(async () => {
 		if (data.id) {
@@ -119,20 +136,15 @@
 				bind:value={$context.name}
 				label="Name" type="text"
 			>
-				<!-- <HelperText validationMsg slot="helper">{dialogData.id.errorMessage}</HelperText> -->
 			</Textfield>
 			<br>
 			<Textfield
 				bind:value={$context.description}
 				label="Description" type="text"
 			>
-				<!-- <HelperText validationMsg slot="helper">{dialogData.id.errorMessage}</HelperText> -->
 			</Textfield>
-			<!-- <br>
-			<h2>Generator settings</h2>
-			{#each Object.keys($context.generatorSettings) as key}
-				<span class="test">{key}:</span> {$context.generatorSettings[key]}<br>
-			{/each} -->
+			<br>
+			<Label style="color: #b71c1c">{errorMessage}</Label>
 		</div>
 	</Content>
 	<Actions>
@@ -140,11 +152,11 @@
 		<Button on:click={saveChanges}>
 			<Label>Save changes</Label>
 		</Button>
-		<Button on:click={save}>
+		<Button on:click={handleSave}>
 			<Label>Save as new</Label>
 		</Button>
 		{:else}
-		<Button on:click={save}>
+		<Button on:click={handleSave}>
 			<Label>Save</Label>
 		</Button>
 		{/if}

@@ -16,7 +16,9 @@ use crate::{
 	auth::Auth,
 	models::{generator_description, generator_type, user},
 	pools::Db,
-	viewmodels::{generator_description::GeneratorDescription, generator_type::GeneratorType},
+	viewmodels::{
+		generator_description_update::GeneratorDescriptionUpdate, generator_type::GeneratorType,
+	},
 };
 
 pub fn get_routes() -> impl Iterator<Item = Route> {
@@ -30,7 +32,10 @@ pub fn get_routes() -> impl Iterator<Item = Route> {
 		.chain(routes![get_generator_types, edit_generator_description]);
 }
 
-async fn is_generator_limit_reached(db: &DatabaseConnection, user_id: i32) -> bool {
+async fn check_if_generator_limit_is_reached(
+	db: &DatabaseConnection,
+	user_id: i32,
+) -> Result<(), BadRequest<&'static str>> {
 	let user = user::Entity::find_by_id(user_id)
 		.one(db)
 		.await
@@ -41,7 +46,11 @@ async fn is_generator_limit_reached(db: &DatabaseConnection, user_id: i32) -> bo
 		.count(db)
 		.await
 		.unwrap();
-	generators_saved as i32 >= user.max_generators
+	if generators_saved as i32 >= user.max_generators {
+		return Err(BadRequest(Some("Max generators reached")));
+	} else {
+		return Ok(());
+	}
 }
 
 async fn save_generator_description(
@@ -133,15 +142,18 @@ async fn get_generator_types(conn: Connection<'_, Db>) -> Json<Vec<GeneratorType
 	)
 }
 
-#[post("/api/generatorDescription/<id>", data = "<generator_description>")]
+#[post(
+	"/api/generatorDescription/<id>",
+	data = "<generator_description_update>"
+)]
 async fn edit_generator_description(
-	generator_description: Json<GeneratorDescription>,
+	generator_description_update: Json<GeneratorDescriptionUpdate>,
 	id: String,
 	conn: Connection<'_, Db>,
 	auth: Auth,
 ) -> Result<Accepted<()>, NotFound<()>> {
 	let db = conn.into_inner();
-	let GeneratorDescription { name, description } = generator_description.0;
+	let GeneratorDescriptionUpdate { name, description } = generator_description_update.0;
 	let Some(generator_description) = generator_description::Entity::find_by_id(id).one(db).await.unwrap() else {
         return Err(NotFound(()));
     };
