@@ -11,7 +11,7 @@ use sea_orm_rocket::Connection;
 use crate::{admin_auth::AdminAuth, models::*, pools::Db, viewmodels};
 
 pub fn get_routes() -> impl Iterator<Item = Route> {
-	routes![get_users, update_user].into_iter()
+	routes![get_users, update_user, delete_all_user_generators].into_iter()
 }
 
 #[get("/api/users")]
@@ -114,4 +114,70 @@ async fn update_user(
 	user.max_generators = Set(new_user_data.max_generators);
 	user.update(db).await.unwrap();
 	return Ok(status::Accepted(None));
+}
+
+#[post("/api/deleteAllUserGenerators/<user_id>")]
+async fn delete_all_user_generators(
+	conn: Connection<'_, Db>,
+	_auth: AdminAuth,
+	user_id: i32,
+) -> Result<status::Accepted<()>, status::BadRequest<content::RawJson<&'static str>>> {
+	let db = conn.into_inner();
+
+	let user = user::Entity::find_by_id(user_id).one(db).await.unwrap();
+
+	if (user.is_none()) {
+		return Err(status::BadRequest(Some(content::RawJson(
+			"{\"error\": \"User not found\"}",
+		))));
+	}
+
+	let generators = generator_description::Entity::find()
+		.filter(generator_description::Column::UserId.eq(user_id))
+		.all(db)
+		.await
+		.unwrap();
+
+	for generator in generators {
+		match generator.generator_type {
+			0 => {
+				let triangles_generator_settings =
+					triangles_generator_settings::Entity::find_by_id(generator.id.clone())
+						.one(db)
+						.await
+						.unwrap()
+						.unwrap();
+				let triangles_generator_settings: triangles_generator_settings::ActiveModel =
+					triangles_generator_settings.into();
+				triangles_generator_settings.delete(db).await.unwrap();
+			}
+			1 => {
+				let circles_generator_settings =
+					circles_generator_settings::Entity::find_by_id(generator.id.clone())
+						.one(db)
+						.await
+						.unwrap()
+						.unwrap();
+				let circles_generator_settings: circles_generator_settings::ActiveModel =
+					circles_generator_settings.into();
+				circles_generator_settings.delete(db).await.unwrap();
+			}
+			2 => {
+				let chains_generator_settings =
+					chains_generator_settings::Entity::find_by_id(generator.id.clone())
+						.one(db)
+						.await
+						.unwrap()
+						.unwrap();
+				let chains_generator_settings: chains_generator_settings::ActiveModel =
+					chains_generator_settings.into();
+				chains_generator_settings.delete(db).await.unwrap();
+			}
+			_ => panic!("Unknown generator type"),
+		};
+		let generator: generator_description::ActiveModel = generator.into();
+		generator.delete(db).await.unwrap();
+	}
+
+	Ok(status::Accepted(None))
 }

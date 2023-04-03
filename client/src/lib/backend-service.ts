@@ -274,6 +274,11 @@ class BackendService {
 		});
 		return response;
 	}
+	async deleteAllUserGenerators(id: number) {
+		this.#accessAPI("deleteAllUserGenerators/" + id, {
+			method: "POST"
+		});
+	}
 }
 
 export default new BackendService();
