@@ -126,7 +126,7 @@ async fn delete_all_user_generators(
 
 	let user = user::Entity::find_by_id(user_id).one(db).await.unwrap();
 
-	if (user.is_none()) {
+	if user.is_none() {
 		return Err(status::BadRequest(Some(content::RawJson(
 			"{\"error\": \"User not found\"}",
 		))));

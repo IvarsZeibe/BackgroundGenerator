@@ -279,6 +279,11 @@ class BackendService {
 			method: "POST"
 		});
 	}
+	async deleteAccount() {
+		return await this.#accessAPI("profile/delete", {
+			method: "POST"
+		});
+	}
 }
 
 export default new BackendService();

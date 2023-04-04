@@ -4,9 +4,10 @@
 	import Select, { Option } from '@smui/select';
     import Textfield from '@smui/textfield';
     import HelperText from '@smui/textfield/helper-text';
-    import { onMount } from 'svelte';
     import { ThemeMode, themeMode, user } from '../../../stores';
 	import ValidationHelper from '$lib/validation-helper';
+    import Dialog, { Actions, Content, Title } from '@smui/dialog';
+    import { goto } from '$app/navigation';
 
 	let options = [ThemeMode.UseDeviceTheme, ThemeMode.Light, ThemeMode.Dark];
 	let value: ThemeMode | "loading" = "loading";
@@ -28,6 +29,7 @@
 	let newPasswordError = "";
 
 	let isEditingPassword = false;
+	let isDeleteAccountDialogOpen = false;
 
 	function getThemeModeName(theme: ThemeMode): string {
 		switch(theme) {
@@ -79,13 +81,22 @@
 		}
 		let response = await backendService.changePassword(oldPassword, newPassword);
 		if (response.ok) {
-			isEditingPassword = false;
-			oldPassword = "";
-			newPassword = "";
-			comfirmNewPassword = "";
+			stopEditingPassword();
 		} else {
 			isOldPasswordInvalid = true;
 			oldPasswordError = await response.text();
+		}
+	}
+	function stopEditingPassword() {
+		isEditingPassword = false;
+		oldPassword = "";
+		newPassword = "";
+		comfirmNewPassword = "";
+	}
+	async function handleDeleteAccount() {
+		if ((await backendService.deleteAccount()).ok) {
+			await backendService.logout();
+			goto("/");
 		}
 	}
 </script>
@@ -160,10 +171,36 @@
 		</Textfield><br>
 		<Button on:click={() => {changePassword()
 		}}>Save</Button>
+		<Button on:click={() => {stopEditingPassword()
+		}}>Cancel</Button>
 		{/if}
 	</div>
-	
+	<div>
+		<h2>Account</h2>
+		<Button on:click={() => {
+			isDeleteAccountDialogOpen = true;
+		}}>Delete account</Button>
+	</div>	
 </div>
+
+<Dialog
+	bind:open={isDeleteAccountDialogOpen}
+>
+	<Title>Delete account?</Title>
+	<Content>
+		<div>
+			Are you sure you want to delete your account? This action cannot be undone.
+		</div>
+	</Content>
+	<Actions>
+		<Button on:click={() => handleDeleteAccount()}>
+			Delete account
+		</Button>
+		<Button>
+			Cancel
+		</Button>
+	</Actions>
+</Dialog>
 
 <style>
 .container {
