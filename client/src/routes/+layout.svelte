@@ -81,6 +81,7 @@
 <style>
 	:global(body) {
 		margin: 0;
+		font-family: Roboto, sans-serif;
 	}
 	.app {
 		display: flex;
