@@ -94,7 +94,7 @@
 		comfirmNewPassword = "";
 	}
 	async function handleDeleteAccount() {
-		if ((await backendService.deleteAccount()).ok) {
+		if ((await backendService.deleteMyAccount()).ok) {
 			await backendService.logout();
 			goto("/");
 		}

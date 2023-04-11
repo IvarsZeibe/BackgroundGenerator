@@ -56,6 +56,7 @@
 
 	let isEditDialogOpen = false;
 	let isClearGeneratorsDialogOpen = false;
+	let isDeleteAccountDialogOpen = false;
 
 	let isExtraInfoShown = false;
 
@@ -173,14 +174,17 @@
 		
 	}
 
-	function openClearGeneratorsDialog(index: number) {
-		isClearGeneratorsDialogOpen = true;
-		openRowIndex = index;
-	}
 	function deleteAllUserGenerators() {
 		backendService.deleteAllUserGenerators(users[openRowIndex].id);
 		users[openRowIndex].generatorsSaved = 0;
 		isClearGeneratorsDialogOpen = false;
+	}
+	
+	async function handleDeleteAccount() {
+		if ((await backendService.deleteAccount((users[openRowIndex].id))).ok) {
+			users.splice(openRowIndex, 1);
+			users = users;
+		}
 	}
 </script>
 
@@ -245,7 +249,7 @@
 				year: 'numeric', month: '2-digit', day: '2-digit',
 				hour: "2-digit", minute: "2-digit", hour12: false
 			})}</Cell>
-			<Cell><Button on:click={() => openClearGeneratorsDialog(i)}><ButtonLabel>Delete Generators</ButtonLabel></Button></Cell>
+			<!-- <Cell><Button on:click={() => openClearGeneratorsDialog(i)}><ButtonLabel>Delete Generators</ButtonLabel></Button></Cell> -->
 			<Cell><Button on:click={() => openEditDialog(i)}><ButtonLabel>Edit</ButtonLabel></Button></Cell>
 		</Row>
 		{/each}
@@ -315,6 +319,16 @@
 		</div>
 	</Content>
 	<Actions>
+		<Button on:click={() => isClearGeneratorsDialogOpen = true}>
+			<ButtonLabel>Delete Generators</ButtonLabel>
+		</Button>
+	</Actions>
+	<Actions>
+		<Button on:click={() => isDeleteAccountDialogOpen = true}>
+			<ButtonLabel>Delete Account</ButtonLabel>
+		</Button>
+	</Actions>	
+	<Actions>
 		<Button on:click={handleSaveButton}>
 			<ButtonLabel>Save</ButtonLabel>
 		</Button>
@@ -336,6 +350,25 @@
 	<Actions>
 		<Button on:click={deleteAllUserGenerators}>
 			<ButtonLabel>Delete All Generators</ButtonLabel>
+		</Button>
+		<Button>
+			<ButtonLabel>Cancel</ButtonLabel>
+		</Button>
+	</Actions>
+</Dialog>
+
+<Dialog
+	bind:open={isDeleteAccountDialogOpen}
+>
+	<Title id="mandatory-title">Delete this account? ({users[openRowIndex]?.email})</Title>
+	<Content id="mandatory-content">
+		<div>
+			Are you sure you want to delete this account? This action cannot be undone.
+		</div>
+	</Content>
+	<Actions>
+		<Button on:click={handleDeleteAccount}>
+			<ButtonLabel>Delete account</ButtonLabel>
 		</Button>
 		<Button>
 			<ButtonLabel>Cancel</ButtonLabel>

@@ -8,10 +8,16 @@ use rocket::{
 use sea_orm::*;
 use sea_orm_rocket::Connection;
 
-use crate::{admin_auth::AdminAuth, models::*, pools::Db, viewmodels};
+use crate::{admin_auth::AdminAuth, models::*, pools::Db, user_helper, viewmodels};
 
 pub fn get_routes() -> impl Iterator<Item = Route> {
-	routes![get_users, update_user, delete_all_user_generators].into_iter()
+	routes![
+		get_users,
+		update_user,
+		delete_all_user_generators,
+		delete_user
+	]
+	.into_iter()
 }
 
 #[get("/api/users")]
@@ -180,4 +186,13 @@ async fn delete_all_user_generators(
 	}
 
 	Ok(status::Accepted(None))
+}
+
+#[delete("/api/users/<id>")]
+pub async fn delete_user(
+	conn: Connection<'_, Db>,
+	_auth: AdminAuth,
+	id: i32,
+) -> Result<status::Accepted<()>, status::BadRequest<&'static str>> {
+	user_helper::delete_user(conn, id).await
 }

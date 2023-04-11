@@ -279,9 +279,14 @@ class BackendService {
 			method: "POST"
 		});
 	}
-	async deleteAccount() {
+	async deleteMyAccount() {
 		return await this.#accessAPI("profile/delete", {
 			method: "POST"
+		});
+	}
+	async deleteAccount(id: number) {
+		return await this.#accessAPI("users/" + id, {
+			method: "DELETE"
 		});
 	}
 }
