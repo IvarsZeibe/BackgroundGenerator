@@ -77,7 +77,7 @@ async fn save_chains_generator_settings(
 	settings: Json<generator_settings::Settings<generator_settings::Chains>>,
 	conn: Connection<'_, Db>,
 	auth: Auth,
-) -> Result<Accepted<()>, BadRequest<&'static str>> {
+) -> Result<Accepted<String>, BadRequest<&'static str>> {
 	let db = conn.into_inner();
 	let generator_settings::Settings::<generator_settings::Chains> {
 		name,
@@ -105,12 +105,15 @@ async fn save_chains_generator_settings(
 		seed: Set(generator_settings.seed),
 	};
 
-	if let Err(error) = settings.insert(db).await {
-		generator_description.delete(db).await.unwrap();
-		println!("{error}");
-		return Err(BadRequest(None));
+	let settings = match settings.insert(db).await {
+		Ok(settings) => settings,
+		Err(error) => {
+			generator_description.delete(db).await.unwrap();
+			println!("{error}");
+			return Err(BadRequest(None));
+		}
 	};
-	Ok(Accepted(None))
+	Ok(Accepted(Some(settings.id)))
 }
 
 #[post("/<id>/save", data = "<settings>")]

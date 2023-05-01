@@ -29,6 +29,8 @@
     import { writable, type Writable } from "svelte/store";
     import { user } from "../../stores";
     import type { LayoutData } from "./$types";
+    import { page } from "$app/stores";
+    import { goto } from "$app/navigation";
 
 	export let data: LayoutData;
 	
@@ -55,6 +57,9 @@
 			previousName = $context.name;
 			previousDescription = $context.description;
 			data.id = await response.text();
+			let query = $page.url.searchParams;
+			query.set("id", data.id);
+			goto(`?${query.toString()}`);
 			isDialogOpen = false;
 		} else {
 			if (response.status == 400) {
