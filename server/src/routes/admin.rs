@@ -181,6 +181,7 @@ async fn delete_all_user_generators(
 			}
 			_ => panic!("Unknown generator type"),
 		};
+		std::fs::remove_file(format!("data/{}.jpg", generator.id.clone())).unwrap();
 		let generator: generator_description::ActiveModel = generator.into();
 		generator.delete(db).await.unwrap();
 	}
